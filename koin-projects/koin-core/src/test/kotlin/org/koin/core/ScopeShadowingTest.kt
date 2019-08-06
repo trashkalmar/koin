@@ -15,13 +15,13 @@ class ScopeShadowingTest {
         val koin = koinApplication {
             printLogger(Level.DEBUG)
             modules(
-                    module {
-                        single { Simple.MySingle(24) }
+                module {
+                    single { Simple.MySingle(24) }
 
-                        scope(named<ClosedScopeAPI.ScopeType>()) {
-                            scoped { Simple.MySingle(42) }
-                        }
+                    scope(named<ClosedScopeAPI.ScopeType>()) {
+                        scoped { Simple.MySingle(42) }
                     }
+                }
             )
         }.koin
 
@@ -29,7 +29,5 @@ class ScopeShadowingTest {
         assertEquals(42, scope.get<Simple.MySingle>().id)
 
         assertEquals(24, koin.get<Simple.MySingle>().id)
-
     }
-
 }

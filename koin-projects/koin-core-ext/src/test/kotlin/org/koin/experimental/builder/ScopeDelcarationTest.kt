@@ -16,18 +16,17 @@ class ScopeDelcarationTest {
         val koin = koinApplication {
             printLogger(Level.DEBUG)
             modules(
-                    module {
-                        single<ComponentA>()
+                module {
+                    single<ComponentA>()
 
-                        scope(scopeName) {
-                            single<ComponentB>()
-                        }
+                    scope(scopeName) {
+                        single<ComponentB>()
                     }
+                }
             )
         }.koin
 
         val scope = koin.createScope("scope", scopeName)
         Assert.assertEquals(koin.get<ComponentA>(), scope.get<ComponentB>().a)
     }
-
 }
