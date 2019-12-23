@@ -17,9 +17,9 @@ package org.koin.core.definition
 
 import org.koin.core.parameter.DefinitionParameters
 import org.koin.core.qualifier.Qualifier
-import org.koin.core.scope.Scope
 import org.koin.core.scope.ScopeDefinition
-import org.koin.ext.getFullName
+import org.koin.core.getFullName
+import org.koin.core.scope.ScopeStorage
 import kotlin.reflect.KClass
 
 /**
@@ -105,4 +105,4 @@ enum class ThreadScope {
 }
 
 typealias IndexKey = String
-typealias Definition<T> = Scope.(DefinitionParameters) -> T
+typealias Definition<T> = ScopeStorage.(DefinitionParameters) -> T

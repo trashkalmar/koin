@@ -16,11 +16,8 @@
 package org.koin.core.registry
 
 import org.koin.core.Koin
-import org.koin.core.error.NoPropertyFileFoundException
+import org.koin.core.ensureNeverFrozen
 import org.koin.core.logger.Level
-import org.koin.ext.isFloat
-import org.koin.ext.isInt
-import org.koin.ext.quoted
 
 /**
  * Property Registry
@@ -31,7 +28,10 @@ import org.koin.ext.quoted
 @Suppress("UNCHECKED_CAST")
 class PropertyRegistry(val _koin: Koin) {
 
-    private val _values: MutableMap<String, Any> = ConcurrentHashMap()
+    init {
+        ensureNeverFrozen()
+    }
+    private val _values: MutableMap<String, Any> = mutableMapOf()
 
     /**
      * saveProperty all properties to registry
@@ -43,24 +43,6 @@ class PropertyRegistry(val _koin: Koin) {
         }
 
         _values.putAll(properties)
-    }
-
-    /**
-     *Save properties values into PropertyRegister
-     */
-    fun saveProperties(properties: Properties) {
-        if (_koin._logger.isAt(Level.DEBUG)) {
-            _koin._logger.debug("load ${properties.size} properties")
-        }
-
-        val propertiesMapValues = properties.toMap() as Map<String, String>
-        propertiesMapValues.forEach { (k: String, v: String) ->
-            when {
-                v.isInt() -> saveProperty(k, v.toInt())
-                v.isFloat() -> saveProperty(k, v.toFloat())
-                else -> saveProperty(k, v.quoted())
-            }
-        }
     }
 
     /**
@@ -76,46 +58,6 @@ class PropertyRegistry(val _koin: Koin) {
      */
     fun <T> getProperty(key: String): T? {
         return _values[key] as? T?
-    }
-
-    /**
-     * Load properties from Property file
-     * @param fileName
-     */
-    fun loadPropertiesFromFile(fileName: String) {
-        if (_koin._logger.isAt(Level.DEBUG)) {
-            _koin._logger.debug("load properties from $fileName")
-        }
-        val content = Koin::class.java.getResource(fileName)?.readText()
-        if (content != null) {
-            if (_koin._logger.isAt(Level.INFO)) {
-                _koin._logger.info("loaded properties from file:'$fileName'")
-            }
-            val properties = readDataFromFile(content)
-            saveProperties(properties)
-        } else {
-            throw NoPropertyFileFoundException("No properties found for file '$fileName'")
-        }
-    }
-
-    private fun readDataFromFile(content: String): Properties {
-        val properties = Properties()
-        properties.load(content.byteInputStream())
-        return properties
-    }
-
-    /**
-     * Load properties from environment
-     */
-    fun loadEnvironmentProperties() {
-        if (_koin._logger.isAt(Level.DEBUG)) {
-            _koin._logger.debug("load properties from environment")
-        }
-        val sysProperties = System.getProperties()
-        saveProperties(sysProperties)
-
-        val sysEnvProperties = System.getenv().toProperties()
-        saveProperties(sysEnvProperties)
     }
 
     fun close() {

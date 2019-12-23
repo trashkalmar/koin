@@ -1,6 +1,7 @@
 package org.koin.core
 
 import kotlin.reflect.KClass
+import kotlin.jvm.kotlin as javaClassToKotlinClass
 
 actual object KoinMultiPlatform {
 //    actual fun <K, V> emptyMutableMap(): MutableMap<K, V> {
@@ -50,3 +51,13 @@ private val firstThread = Thread.currentThread()
 
 internal actual val isMainThread: Boolean
     get() = firstThread === Thread.currentThread()
+
+actual typealias KoinMPClass<T> = Class<T>
+
+actual val <T : Any> KoinMPClass<T>.kotlin: KClass<T>
+    get() = javaClassToKotlinClass
+
+internal actual fun Any.ensureNeverFrozen() {
+}
+
+internal actual fun <T> T.freeze(): T = this

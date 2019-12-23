@@ -15,10 +15,7 @@
  */
 package org.koin.core.module
 
-import org.koin.core.definition.BeanDefinition
-import org.koin.core.definition.Definition
-import org.koin.core.definition.Definitions
-import org.koin.core.definition.Options
+import org.koin.core.definition.*
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.scope.ScopeDefinition
 import org.koin.dsl.ScopeDSL
@@ -59,13 +56,15 @@ class Module(
         qualifier: Qualifier? = null,
         createdAtStart: Boolean = false,
         override: Boolean = false,
+        threadScope: ThreadScope = ThreadScope.Main,
         noinline definition: Definition<T>
     ): BeanDefinition<T> {
         return Definitions.saveSingle(
             qualifier,
             definition,
             rootScope,
-            makeOptions(override, createdAtStart)
+            makeOptions(override, createdAtStart),
+                threadScope
         )
     }
 
@@ -81,9 +80,10 @@ class Module(
     inline fun <reified T> factory(
         qualifier: Qualifier? = null,
         override: Boolean = false,
+        threadScope: ThreadScope = ThreadScope.Main,
         noinline definition: Definition<T>
     ): BeanDefinition<T> {
-        return Definitions.saveFactory(qualifier, definition, rootScope, makeOptions(override))
+        return Definitions.saveFactory(qualifier, definition, rootScope, makeOptions(override), threadScope)
     }
 
     /**

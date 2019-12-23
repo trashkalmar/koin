@@ -15,38 +15,64 @@
  */
 package org.koin.core.scope
 
-import org.koin.core.Koin
-import org.koin.core.KoinMPClass
+import org.koin.core.*
+import org.koin.core.assertMainThread
+import org.koin.core.definition.ThreadScope
 import org.koin.core.definition.indexKey
 import org.koin.core.error.ClosedScopeException
 import org.koin.core.error.MissingPropertyException
 import org.koin.core.error.NoBeanDefFoundException
-import org.koin.core.kotlin
+import org.koin.core.getFullName
 import org.koin.core.logger.Level
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.registry.InstanceRegistry
 import org.koin.core.time.measureDurationForResult
-import org.koin.ext.getFullName
 import kotlin.jvm.JvmOverloads
 import kotlin.reflect.KClass
 
-data class Scope(
+class ScopeRef(private val id: ScopeID){
+    /*inline fun <reified T> getOrNull(qualifier: Qualifier? = null,
+                                     noinline parameters: ParametersDefinition? = null): T? {
+        T::class
+    }
+
+    private fun <T> getOrNull(clazz: KClass<*>,
+                              qualifier: Qualifier? = null,
+                              parameters: ParametersDefinition? = null): T?{
+        mainOrBlock {
+            KoinState._scopeRegistry.scopes[id]?.getOrNull()
+        }
+    }*/
+    /*= mainOrBlock {
+KoinState._scopeRegistry.scopes[id]?.getOrNull<T>()
+}*/
+
+    init {
+        freeze()
+    }
+
+
+}
+
+data class ScopeStorage(
         val id: ScopeID,
         val _scopeDefinition: ScopeDefinition,
         val _koin: Koin
 ) {
-    var _linkedScope: List<Scope> = emptyList()
-    val _instanceRegistry = InstanceRegistry(_koin, this)
+    private var _linkedScope: List<ScopeStorage> = emptyList()
+    internal val _instanceRegistry = InstanceRegistry(_koin, this)
     private val _callbacks = arrayListOf<ScopeCallback>()
     private var _closed: Boolean = false
     val closed: Boolean
         get() = _closed
 
-    internal fun create(rootScope: Scope? = null) {
+    internal fun create(rootScope: ScopeStorage? = null) {
         _instanceRegistry.create(_scopeDefinition.definitions)
         rootScope?.let { _linkedScope = listOf(it) }
     }
+
+    val ref = ScopeRef(id)
 
     /**
      * Lazy inject a Koin instance
@@ -169,17 +195,7 @@ data class Scope(
             qualifier: Qualifier? = null,
             parameters: ParametersDefinition? = null
     ): T {
-        val kClass = clazz.kotlin
-        return if (_koin._logger.isAt(Level.DEBUG)) {
-            _koin._logger.debug("+- get '${kClass.getFullName()}' with qualifier '$qualifier'")
-            val (instance: T, duration: Double) = measureDurationForResult {
-                resolveInstance<T>(qualifier, kClass, parameters)
-            }
-            _koin._logger.debug("+- got '${kClass.getFullName()}' in $duration ms")
-            return instance
-        } else {
-            resolveInstance(qualifier, kClass, parameters)
-        }
+        return get(clazz.kotlin, qualifier, parameters)
     }
 
     private fun <T> resolveInstance(
@@ -187,6 +203,8 @@ data class Scope(
             clazz: KClass<*>,
             parameters: ParametersDefinition?
     ): T {
+        //We should *never* get here on a non-main thread
+        assertMainThread()
         if (_closed) {
             throw ClosedScopeException("Scope '$id' is closed")
         }
@@ -242,10 +260,11 @@ data class Scope(
     fun <T : Any> declare(
             instance: T,
             qualifier: Qualifier? = null,
+            threadScope: ThreadScope = ThreadScope.Main,
             secondaryTypes: List<KClass<*>>? = null,
             override: Boolean = false
-    ) = synchronized(this) {
-        val definition = _scopeDefinition.saveNewDefinition(instance, qualifier, secondaryTypes, override)
+    ) {
+        val definition = _scopeDefinition.saveNewDefinition(instance, qualifier, threadScope, secondaryTypes, override)
         _instanceRegistry.saveDefinition(definition, override = true)
     }
 
@@ -332,17 +351,17 @@ data class Scope(
     /**
      * Close all instances from this scope
      */
-    fun close() = synchronized(this) {
+    fun close() {
         _closed = true
         if (_koin._logger.isAt(Level.DEBUG)) {
             _koin._logger.info("closing scope:'$id'")
         }
         // call on close from callbacks
-        _callbacks.forEach { it.onScopeClose(this) }
+        _callbacks.forEach { it.onScopeClose(this.ref) }
         _callbacks.clear()
 
         _instanceRegistry.close()
-        _koin._scopeRegistry.deleteScope(this)
+        _koin.deleteScope(this.id)
     }
 
     override fun toString(): String {

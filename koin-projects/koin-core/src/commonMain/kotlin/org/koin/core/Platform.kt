@@ -7,6 +7,9 @@ expect class KoinMPClass<T : Any>
 expect val <T : Any> KoinMPClass<T>.kotlin: KClass<T>
 
 internal expect fun Any.ensureNeverFrozen()
+
+internal expect fun <T> T.freeze(): T
+
 internal expect val isMainThread:Boolean
 
 expect object KoinMultiPlatform {

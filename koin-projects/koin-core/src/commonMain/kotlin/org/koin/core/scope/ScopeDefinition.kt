@@ -3,13 +3,14 @@ package org.koin.core.scope
 import org.koin.core.definition.BeanDefinition
 import org.koin.core.definition.Definitions
 import org.koin.core.definition.Options
+import org.koin.core.definition.ThreadScope
 import org.koin.core.error.DefinitionOverrideException
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.qualifier._q
 import kotlin.reflect.KClass
 
 /**
- * Imternal Scope Definition
+ * Internal Scope Definition
  */
 class ScopeDefinition(val qualifier: Qualifier, val isRoot: Boolean = false, private val _definitions: HashSet<BeanDefinition<*>> = hashSetOf()) {
 
@@ -37,6 +38,7 @@ class ScopeDefinition(val qualifier: Qualifier, val isRoot: Boolean = false, pri
     fun <T : Any> saveNewDefinition(
             instance: T,
             qualifier: Qualifier? = null,
+            threadScope: ThreadScope,
             secondaryTypes: List<KClass<*>>? = null,
             override: Boolean = false
     ): BeanDefinition<out Any?> {
@@ -56,6 +58,7 @@ class ScopeDefinition(val qualifier: Qualifier, val isRoot: Boolean = false, pri
                 { instance },
                 this,
                 Options(isCreatedAtStart = false, override = override),
+                threadScope,
                 secondaryTypes ?: emptyList()
         )
         save(beanDefinition, override)

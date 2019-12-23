@@ -1,5 +1,8 @@
 package org.koin.core
 
+import platform.Foundation.NSThread
+import kotlin.native.concurrent.ensureNeverFrozen
+import kotlin.native.concurrent.freeze
 import kotlin.reflect.KClass
 import kotlin.system.getTimeNanos
 
@@ -35,10 +38,22 @@ actual object KoinMultiPlatform {
     }
 
     actual fun printStackTrace(throwable: Throwable) {
-        stackTrace(throwable).forEach(::println)
+//        stackTrace(throwable).forEach(::println)
+        throwable.printStackTrace()
     }
 //
 //    actual fun <T> emptyMutableSet(): MutableSet<T> = frozenHashSet()
 //
 //    actual fun <T> emptyMutableList(): MutableList<T> = frozenLinkedList()
 }
+
+actual data class KoinMPClass<T : Any>(val kclass: KClass<T>)
+
+actual val <T : Any> KoinMPClass<T>.kotlin: KClass<T>
+    get() = kclass
+
+internal actual fun Any.ensureNeverFrozen() = ensureNeverFrozen()
+internal actual val isMainThread: Boolean
+    get() = NSThread.isMainThread
+
+internal actual fun <T> T.freeze(): T = this.freeze()

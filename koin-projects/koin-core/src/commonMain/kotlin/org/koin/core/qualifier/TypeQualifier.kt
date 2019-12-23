@@ -1,6 +1,7 @@
 package org.koin.core.qualifier
 
-import org.koin.ext.getFullName
+
+import org.koin.core.getFullName
 import kotlin.reflect.KClass
 
 data class TypeQualifier(val type: KClass<*>) : Qualifier {

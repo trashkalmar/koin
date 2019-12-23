@@ -18,17 +18,3 @@ package org.koin.ext
 import org.koin.core.KoinMultiPlatform
 import kotlin.reflect.KClass
 
-/**
- * Give full class qualifier
- */
-fun KClass<*>.getFullName(): String {
-    return classNames[this] ?: saveCache()
-}
-
-fun KClass<*>.saveCache(): String {
-    val name = KoinMultiPlatform.className(this)
-    classNames[this] = name
-    return name
-}
-
-private val classNames: MutableMap<KClass<*>, String> = ConcurrentHashMap()

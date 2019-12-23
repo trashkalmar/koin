@@ -22,7 +22,7 @@ import org.koin.core.error.MissingPropertyException
  *
  * @author Arnaud Giuliani
  */
-data class Properties(private val data: MutableMap<String, Any> = ConcurrentHashMap()) {
+data class Properties(private val data: MutableMap<String, Any> = mutableMapOf()) {
 
     operator fun <T> set(key: String, value: T) {
         data[key] = value as Any

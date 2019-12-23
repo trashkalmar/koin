@@ -11,10 +11,10 @@ import org.koin.core.instance.InstanceFactory
 import org.koin.core.instance.SingleInstanceFactory
 import org.koin.core.logger.Level
 import org.koin.core.parameter.ParametersDefinition
-import org.koin.core.scope.Scope
+import org.koin.core.scope.ScopeStorage
 import kotlin.reflect.KClass
 
-class InstanceRegistry(val _koin: Koin, val _scope: Scope) {
+internal class InstanceRegistry(val _koin: Koin, val _scope: ScopeStorage) {
 
     //TODO Lock - ConcurrentHashMap
     private val _instances = HashMap<IndexKey, InstanceFactory<*>>()

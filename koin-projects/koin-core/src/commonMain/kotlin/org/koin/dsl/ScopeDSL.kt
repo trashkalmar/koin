@@ -24,15 +24,6 @@ import org.koin.core.scope.ScopeDefinition
  */
 class ScopeDSL(val scopeDefinition: ScopeDefinition) {
 
-    @Deprecated("Can't use Single in a scope. Use Scoped instead", level = DeprecationLevel.ERROR)
-    inline fun <reified T> single(
-        qualifier: Qualifier? = null,
-        override: Boolean = false,
-        noinline definition: Definition<T>
-    ): BeanDefinition<T> {
-        error("Scoped definition is deprecated and has been replaced with Single scope definitions")
-    }
-
     inline fun <reified T> scoped(
         qualifier: Qualifier? = null,
         override: Boolean = false,
