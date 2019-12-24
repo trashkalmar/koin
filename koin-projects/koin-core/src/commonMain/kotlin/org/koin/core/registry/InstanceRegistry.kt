@@ -88,7 +88,7 @@ internal class InstanceRegistry(val _koin: Koin, val _scope: ScopeStorage) {
     }
 
     private fun defaultInstanceContext(parameters: ParametersDefinition?) =
-            InstanceContext(_koin, _scope, parameters)
+            InstanceContext(_koin, _scope.scopeBasedInteractor, parameters)
 
     internal fun close() {
         _instances.values.forEach { it.drop() }
@@ -100,7 +100,7 @@ internal class InstanceRegistry(val _koin: Koin, val _scope: ScopeStorage) {
                 .filter { instance -> instance.beanDefinition.options.isCreatedAtStart }
                 .forEach { instance ->
                     instance.get(
-                            InstanceContext(_koin, _scope)
+                            InstanceContext(_koin, _scope.scopeBasedInteractor)
                     )
                 }
     }

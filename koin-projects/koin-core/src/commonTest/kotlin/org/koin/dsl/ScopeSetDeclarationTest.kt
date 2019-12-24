@@ -4,7 +4,6 @@ import kotlin.test.*
 import kotlin.test.Test
 import org.koin.Simple
 import org.koin.core.KoinMultiPlatform
-import org.koin.core.KoinState
 import org.koin.core.error.DefinitionOverrideException
 import org.koin.core.logger.Level
 import org.koin.core.qualifier.StringQualifier
@@ -28,11 +27,11 @@ class ScopeSetDeclarationTest {
             )
         }.koin
 
-        val def: ScopeDefinition = KoinState._scopeRegistry.scopeDefinitions.values.first { def -> def.qualifier == scopeKey }
+        val def: ScopeDefinition = koin._koinState._scopeRegistry.scopeDefinitions.values.first { def -> def.qualifier == scopeKey }
         assertTrue(def.qualifier == scopeKey)
 
         val scope = koin.createScope("id", scopeKey)
-        assertTrue(scope._scopeDefinition == def)
+        assertTrue(scope.findScope()._scopeDefinition == def)
     }
 
     @Test
@@ -49,10 +48,10 @@ class ScopeSetDeclarationTest {
                     }
             )
         }.koin
-        val defA = KoinState._scopeRegistry.scopeDefinitions.values.first { def -> def.qualifier == _q("A") }
+        val defA = koin._koinState._scopeRegistry.scopeDefinitions.values.first { def -> def.qualifier == _q("A") }
         assertTrue(defA.qualifier == StringQualifier("A"))
 
-        val defB = KoinState._scopeRegistry.scopeDefinitions.values.first { def -> def.qualifier == _q("B") }
+        val defB = koin._koinState._scopeRegistry.scopeDefinitions.values.first { def -> def.qualifier == _q("B") }
         assertTrue(defB.qualifier == StringQualifier("B"))
 
         val scopeA = koin.createScope("A", named("A")).get<Simple.ComponentA>()
@@ -70,7 +69,7 @@ class ScopeSetDeclarationTest {
                     }
             )
         }.koin
-        val def = KoinState._scopeRegistry.scopeDefinitions.values.first { def -> def.qualifier == scopeKey }
+        val def = koin._koinState._scopeRegistry.scopeDefinitions.values.first { def -> def.qualifier == scopeKey }
         assertTrue(def.qualifier == scopeKey)
     }
 

@@ -1,7 +1,9 @@
 package org.koin.dsl
 
+import kotlinx.coroutines.GlobalScope
 import org.koin.Simple
 import org.koin.core.KoinState
+import org.koin.core.context.GlobalContext
 import org.koin.core.definition.Definitions
 import org.koin.core.definition.Kind
 import org.koin.core.definition.Options
@@ -18,7 +20,7 @@ import kotlin.test.assertTrue
 class BeanDefinitionTest {
 
     val koin = koinApplication { }.koin
-    val rootScope = KoinState._scopeRegistry.rootScope
+    val rootScope = koin._koinState._scopeRegistry.rootScope
 
     @Test
     fun `equals definitions`() {
@@ -120,7 +122,7 @@ class BeanDefinitionTest {
         val instance = app.getInstanceFactory(Simple.ComponentA::class)!!.get(
                 InstanceContext(
                         app.koin,
-                        rootScope,
+                        rootScope.scopeBasedInteractor,
                         _parameters = { emptyParametersHolder() })
         )
         assertEquals(instance, app.koin.get<Simple.ComponentA>())

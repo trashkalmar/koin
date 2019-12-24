@@ -1,6 +1,6 @@
 package org.koin.core
 
-import org.junit.Assert.*
+import kotlin.test.*
 import kotlin.test.Test
 import org.koin.core.parameter.DefinitionParameters
 import org.koin.core.parameter.DefinitionParameters.Companion.MAX_PARAMS

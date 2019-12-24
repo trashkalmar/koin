@@ -1,7 +1,6 @@
 package org.koin.core
 
-import org.junit.Assert.fail
-import org.junit.Ignore
+
 import kotlin.test.Test
 import org.koin.Errors
 import org.koin.Simple
@@ -10,6 +9,7 @@ import org.koin.core.error.NoBeanDefFoundException
 import org.koin.core.logger.Level
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
+import kotlin.test.fail
 
 class ErrorCheckTest {
 
@@ -57,7 +57,7 @@ class ErrorCheckTest {
         }
     }
 
-    @Test
+    /*@Test
     @Ignore
     fun `cycle error`() {
         val app = koinApplication {
@@ -74,5 +74,5 @@ class ErrorCheckTest {
         } catch (e: StackOverflowError) {
             e.printStackTrace()
         }
-    }
+    }*/
 }

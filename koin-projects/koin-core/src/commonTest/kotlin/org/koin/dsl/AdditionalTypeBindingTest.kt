@@ -1,7 +1,6 @@
 package org.koin.dsl
 
-import org.junit.Assert.*
-import org.junit.Ignore
+import kotlin.test.*
 import kotlin.test.Test
 import org.koin.Simple
 import org.koin.core.error.NoBeanDefFoundException
@@ -170,7 +169,7 @@ class AdditionalTypeBindingTest {
                     })
         }.koin
 
-        assert(koin.getAll<Simple.ComponentInterface1>().size == 2)
+        assertTrue(koin.getAll<Simple.ComponentInterface1>().size == 2)
         assertTrue(koin.get<Simple.ComponentInterface1>() is Simple.Component1)
     }
 
@@ -188,6 +187,6 @@ class AdditionalTypeBindingTest {
                         )
                     })
         }.koin
-        assert(koin.getAll<Simple.ComponentInterface1>().size == 2)
+        assertTrue(koin.getAll<Simple.ComponentInterface1>().size == 2)
     }
 }

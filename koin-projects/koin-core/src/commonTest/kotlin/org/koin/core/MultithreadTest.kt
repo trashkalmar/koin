@@ -10,6 +10,7 @@ import kotlin.random.Random
 
 const val MAX_TIME = 1000L
 
+/*
 class MultithreadTest {
 
     @Test
@@ -58,4 +59,4 @@ class MultithreadTest {
         println("thread sleep  $timer")
         Thread.sleep(timer)
     }
-}
+}*/

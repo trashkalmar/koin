@@ -1,8 +1,7 @@
 package org.koin.dsl
 
-import org.junit.After
+import kotlin.test.*
 import kotlin.test.assertEquals
-import org.junit.Assert.fail
 import kotlin.test.Test
 import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
@@ -15,7 +14,7 @@ import org.koin.test.assertHasNoStandaloneInstance
 
 class KoinAppCreationTest {
 
-    @After
+    @AfterTest
     fun after() {
         stopKoin()
     }

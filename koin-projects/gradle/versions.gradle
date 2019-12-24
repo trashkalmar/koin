@@ -4,7 +4,7 @@ ext {
 
     // Kotlin
     kotlin_version = '1.3.61'
-    coroutines_version = "1.3.0"
+    coroutines_version = "1.3.3-native-mt-SNAPSHOT"
     
     // Dokka
     dokka_version = '0.9.16'

@@ -1,7 +1,5 @@
 package org.koin.core
 
-import org.junit.Assert.*
-import org.junit.Ignore
 import kotlin.test.Test
 import org.koin.Simple
 import org.koin.core.error.DefinitionOverrideException
@@ -10,6 +8,9 @@ import org.koin.core.logger.Level
 import org.koin.core.qualifier.named
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.fail
 
 class DeclareInstanceTest {
 

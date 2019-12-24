@@ -20,6 +20,7 @@ kotlin {
     commonMain {
       dependencies {
         api kotlin("stdlib-common")
+        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-common:$coroutines_version"
       }
     }
 
@@ -51,6 +52,7 @@ kotlin {
       dependencies {
         implementation "co.touchlab:stately:$stately_version"
         implementation "co.touchlab:stately-collections:$stately_version"
+        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-native:$coroutines_version"
       }
     }
 

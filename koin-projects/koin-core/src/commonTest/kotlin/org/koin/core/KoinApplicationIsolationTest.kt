@@ -1,7 +1,7 @@
 package org.koin.core
 
-import org.junit.Assert.*
 import kotlin.test.Test
+import kotlin.test.fail
 import org.koin.Simple
 import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
@@ -10,6 +10,8 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.koin.test.getBeanDefinition
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 class KoinApplicationIsolationTest {
 
@@ -46,7 +48,7 @@ class KoinApplicationIsolationTest {
         app.createEagerInstances()
 
         val def = app.getBeanDefinition(Simple.ComponentA::class)!!
-        assertTrue(app.koin._scopeRegistry._rootScope!!._instanceRegistry.instances.values
+        assertTrue(app.koin._koinState._scopeRegistry._rootScope!!._instanceRegistry.instances.values
             .first { instanceFactory -> instanceFactory.beanDefinition.primaryType == Simple.ComponentA::class }.isCreated()
         )
     }

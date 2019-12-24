@@ -1,10 +1,11 @@
 package org.koin.dsl
 
 import kotlin.test.assertEquals
-import org.junit.Assert.fail
 import kotlin.test.Test
 import org.koin.Simple
 import org.koin.core.error.InstanceCreationException
+import org.koin.core.printStackTrace
+import kotlin.test.fail
 
 class ModuleAndPropertiesTest {
 

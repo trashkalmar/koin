@@ -22,6 +22,7 @@ import org.koin.core.definition.indexKey
 import org.koin.core.error.ClosedScopeException
 import org.koin.core.error.MissingPropertyException
 import org.koin.core.error.NoBeanDefFoundException
+import org.koin.core.error.ScopeNotCreatedException
 import org.koin.core.getFullName
 import org.koin.core.logger.Level
 import org.koin.core.parameter.ParametersDefinition
@@ -31,28 +32,40 @@ import org.koin.core.time.measureDurationForResult
 import kotlin.jvm.JvmOverloads
 import kotlin.reflect.KClass
 
-class ScopeRef(private val id: ScopeID){
-    /*inline fun <reified T> getOrNull(qualifier: Qualifier? = null,
-                                     noinline parameters: ParametersDefinition? = null): T? {
-        T::class
-    }
-
-    private fun <T> getOrNull(clazz: KClass<*>,
-                              qualifier: Qualifier? = null,
-                              parameters: ParametersDefinition? = null): T?{
-        mainOrBlock {
-            KoinState._scopeRegistry.scopes[id]?.getOrNull()
-        }
-    }*/
-    /*= mainOrBlock {
-KoinState._scopeRegistry.scopes[id]?.getOrNull<T>()
-}*/
-
+class ScopeRef(val id: ScopeID, val koin:Koin):ScopeBasedInteractor(){
     init {
         freeze()
     }
 
+    fun close() = mainOrBust{
+        findScope().close()
+    }
 
+    val closed: Boolean
+        get() = mainOrBust {
+            return@mainOrBust try {
+                findScope().closed
+            } catch (e: ScopeNotCreatedException) {
+                true
+            }
+        }
+
+    override fun findScope(): ScopeStorage {
+        return koin._koinState._scopeRegistry.getScopeOrNull(id)
+                ?: throw ScopeNotCreatedException("No scope found for id '$id'")
+    }
+
+    override fun getScope(scopeID: ScopeID): ScopeRef = mainOrBlock {
+        koin.getScope(scopeID)
+    }
+
+    override fun <T> getProperty(key: String, defaultValue: T): T = mainOrBlock {
+        koin.getProperty(key, defaultValue)
+    }
+
+    override fun <T> getProperty(key: String): T  = mainOrBlock {
+        koin.getProperty(key)
+    }
 }
 
 data class ScopeStorage(
@@ -62,7 +75,7 @@ data class ScopeStorage(
 ) {
     private var _linkedScope: List<ScopeStorage> = emptyList()
     internal val _instanceRegistry = InstanceRegistry(_koin, this)
-    private val _callbacks = arrayListOf<ScopeCallback>()
+    internal val _callbacks = arrayListOf<ScopeCallback>()
     private var _closed: Boolean = false
     val closed: Boolean
         get() = _closed
@@ -72,66 +85,14 @@ data class ScopeStorage(
         rootScope?.let { _linkedScope = listOf(it) }
     }
 
-    val ref = ScopeRef(id)
+    val ref = ScopeRef(id, _koin)
 
-    /**
-     * Lazy inject a Koin instance
-     * @param qualifier
-     * @param scope
-     * @param parameters
-     *
-     * @return Lazy instance of type T
-     */
-    @JvmOverloads
-    inline fun <reified T> inject(
-            qualifier: Qualifier? = null,
-            noinline parameters: ParametersDefinition? = null
-    ): Lazy<T> =
-            lazy { get<T>(qualifier, parameters) }
-
-    /**
-     * Lazy inject a Koin instance if available
-     * @param qualifier
-     * @param scope
-     * @param parameters
-     *
-     * @return Lazy instance of type T or null
-     */
-    @JvmOverloads
-    inline fun <reified T> injectOrNull(
-            qualifier: Qualifier? = null,
-            noinline parameters: ParametersDefinition? = null
-    ): Lazy<T?> =
-            lazy { getOrNull<T>(qualifier, parameters) }
-
-    /**
-     * Get a Koin instance
-     * @param qualifier
-     * @param scope
-     * @param parameters
-     */
-    @JvmOverloads
-    inline fun <reified T> get(
-            qualifier: Qualifier? = null,
-            noinline parameters: ParametersDefinition? = null
-    ): T {
-        return get(T::class, qualifier, parameters)
-    }
-
-    /**
-     * Get a Koin instance if available
-     * @param qualifier
-     * @param scope
-     * @param parameters
-     *
-     * @return instance of type T or null
-     */
-    @JvmOverloads
-    inline fun <reified T> getOrNull(
-            qualifier: Qualifier? = null,
-            noinline parameters: ParametersDefinition? = null
-    ): T? {
-        return getOrNull(T::class, qualifier, parameters)
+    val scopeBasedInteractor : ScopeBasedInteractor
+    get() {
+        return if(id == ScopeDefinition.ROOT_SCOPE_ID)
+            _koin
+        else
+            ref
     }
 
     /**
@@ -179,23 +140,6 @@ data class ScopeStorage(
         } else {
             resolveInstance(qualifier, clazz, parameters)
         }
-    }
-
-    /**
-     * Get a Koin instance
-     * @param java class
-     * @param qualifier
-     * @param parameters
-     *
-     * @return instance of type T
-     */
-    @JvmOverloads
-    fun <T> get(
-            clazz: KoinMPClass<*>,
-            qualifier: Qualifier? = null,
-            parameters: ParametersDefinition? = null
-    ): T {
-        return get(clazz.kotlin, qualifier, parameters)
     }
 
     private fun <T> resolveInstance(
@@ -269,15 +213,10 @@ data class ScopeStorage(
     }
 
     /**
-     * Get current Koin instance
-     */
-    fun getKoin() = _koin
-
-    /**
      * Get Scope
      * @param scopeID
      */
-    fun getScope(scopeID: ScopeID) = getKoin().getScope(scopeID)
+    fun getScope(scopeID: ScopeID) = _koin.getScope(scopeID)
 
     /**
      * Register a callback for this Scope Instance
@@ -287,31 +226,12 @@ data class ScopeStorage(
     }
 
     /**
-     * Get a all instance for given inferred class (in primary or secondary type)
-     *
-     * @return list of instances of type T
-     */
-    inline fun <reified T : Any> getAll(): List<T> = getAll(T::class)
-
-    /**
      * Get a all instance for given class (in primary or secondary type)
      * @param clazz T
      *
      * @return list of instances of type T
      */
     fun <T : Any> getAll(clazz: KClass<*>): List<T> = _instanceRegistry.getAll(clazz)
-
-    /**
-     * Get instance of primary type P and secondary type S
-     * (not for scoped instances)
-     *
-     * @return instance of type S
-     */
-    inline fun <reified S, reified P> bind(noinline parameters: ParametersDefinition? = null): S {
-        val secondaryType = S::class
-        val primaryType = P::class
-        return bind(primaryType, secondaryType, parameters)
-    }
 
     /**
      * Get instance of primary type P and secondary type S

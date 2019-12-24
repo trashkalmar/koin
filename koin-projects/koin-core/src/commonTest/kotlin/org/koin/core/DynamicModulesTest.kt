@@ -1,8 +1,6 @@
 package org.koin.core
 
-import org.junit.Assert
-import org.junit.Assert.fail
-import kotlin.test.Test
+
 import org.koin.KoinCoreTest
 import org.koin.Simple
 import org.koin.core.context.*
@@ -15,6 +13,7 @@ import org.koin.dsl.bind
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.koin.test.getBeanDefinition
+import kotlin.test.*
 
 class DynamicModulesTest : KoinCoreTest() {
 
@@ -29,13 +28,13 @@ class DynamicModulesTest : KoinCoreTest() {
         }
 
         val defA = app.getBeanDefinition(Simple.ComponentA::class) ?: error("no definition found")
-        Assert.assertEquals(Kind.Single, defA.kind)
+        assertEquals(Kind.Single, defA.kind)
 
-        Assert.assertNotNull(app.koin.get<Simple.ComponentA>())
+        assertNotNull(app.koin.get<Simple.ComponentA>())
 
         app.unloadModules(module)
 
-        Assert.assertNull(app.getBeanDefinition(Simple.ComponentA::class))
+        assertNull(app.getBeanDefinition(Simple.ComponentA::class))
 
         try {
             app.koin.get<Simple.ComponentA>()
@@ -56,14 +55,14 @@ class DynamicModulesTest : KoinCoreTest() {
         }
 
         val defA = app.getBeanDefinition(Simple.Component1::class) ?: error("no definition found")
-        Assert.assertEquals(Kind.Single, defA.kind)
+        assertEquals(Kind.Single, defA.kind)
 
-        Assert.assertNotNull(app.koin.get<Simple.Component1>())
-        Assert.assertNotNull(app.koin.get<Simple.ComponentInterface1>())
+        assertNotNull(app.koin.get<Simple.Component1>())
+        assertNotNull(app.koin.get<Simple.ComponentInterface1>())
 
         app.unloadModules(module)
 
-        Assert.assertNull(app.getBeanDefinition(Simple.ComponentA::class))
+        assertNull(app.getBeanDefinition(Simple.ComponentA::class))
 
         try {
             app.koin.get<Simple.Component1>()
@@ -96,12 +95,12 @@ class DynamicModulesTest : KoinCoreTest() {
         app.getBeanDefinition(Simple.ComponentA::class) ?: error("no definition found")
         app.getBeanDefinition(Simple.ComponentB::class) ?: error("no definition found")
 
-        Assert.assertNotNull(app.koin.get<Simple.ComponentA>())
-        Assert.assertNotNull(app.koin.get<Simple.ComponentB>())
+        assertNotNull(app.koin.get<Simple.ComponentA>())
+        assertNotNull(app.koin.get<Simple.ComponentB>())
 
         app.unloadModules(module2)
 
-        Assert.assertNull(app.getBeanDefinition(Simple.ComponentB::class))
+        assertNull(app.getBeanDefinition(Simple.ComponentB::class))
 
         try {
             app.koin.get<Simple.ComponentB>()
@@ -127,12 +126,12 @@ class DynamicModulesTest : KoinCoreTest() {
         app.getBeanDefinition(Simple.ComponentA::class) ?: error("no definition found")
         app.getBeanDefinition(Simple.ComponentB::class) ?: error("no definition found")
 
-        Assert.assertNotNull(app.koin.get<Simple.ComponentA>())
-        Assert.assertNotNull(app.koin.get<Simple.ComponentB>())
+        assertNotNull(app.koin.get<Simple.ComponentA>())
+        assertNotNull(app.koin.get<Simple.ComponentB>())
 
         app.unloadModules(module2)
 
-        Assert.assertNull(app.getBeanDefinition(Simple.ComponentB::class))
+        assertNull(app.getBeanDefinition(Simple.ComponentB::class))
 
         try {
             app.koin.get<Simple.ComponentB>()
@@ -156,11 +155,11 @@ class DynamicModulesTest : KoinCoreTest() {
         }
 
         app.getBeanDefinition(Simple.MySingle::class) ?: error("no definition found")
-        Assert.assertEquals(24, app.koin.get<Simple.MySingle>().id)
+        assertEquals(24, app.koin.get<Simple.MySingle>().id)
 
         app.unloadModules(module2)
 
-        Assert.assertNull(app.getBeanDefinition(Simple.MySingle::class))
+        assertNull(app.getBeanDefinition(Simple.MySingle::class))
 
         try {
             app.koin.get<Simple.MySingle>()
@@ -183,14 +182,14 @@ class DynamicModulesTest : KoinCoreTest() {
         val koin = app.koin
 
         app.getBeanDefinition(Simple.MySingle::class) ?: error("no definition found")
-        Assert.assertEquals(42, app.koin.get<Simple.MySingle> { parametersOf(42) }.id)
+        assertEquals(42, app.koin.get<Simple.MySingle> { parametersOf(42) }.id)
 
         koin.unloadModules(listOf(module))
         koin.loadModules(listOf(module))
 
-        Assert.assertNotNull(app.getBeanDefinition(Simple.MySingle::class))
+        assertNotNull(app.getBeanDefinition(Simple.MySingle::class))
 
-        Assert.assertEquals(24, app.koin.get<Simple.MySingle> { parametersOf(24) }.id)
+        assertEquals(24, app.koin.get<Simple.MySingle> { parametersOf(24) }.id)
     }
 
     @Test
@@ -203,7 +202,7 @@ class DynamicModulesTest : KoinCoreTest() {
             modules(module)
         }
 
-        Assert.assertEquals(
+        assertEquals(
             42,
             GlobalContext.get().get<Simple.MySingle> { parametersOf(42) }.id
         )
@@ -211,7 +210,7 @@ class DynamicModulesTest : KoinCoreTest() {
         unloadKoinModules(module)
         loadKoinModules(module)
 
-        Assert.assertEquals(
+        assertEquals(
             24,
             GlobalContext.get().get<Simple.MySingle> { parametersOf(24) }.id
         )
@@ -233,15 +232,15 @@ class DynamicModulesTest : KoinCoreTest() {
         }
 
         val scope = app.koin.createScope("id", scopeKey)
-        val defA = scope.getBeanDefinition(clazz = Simple.ComponentA::class)
+        val defA = scope.findScope().getBeanDefinition(clazz = Simple.ComponentA::class)
             ?: error("no definition found")
-        Assert.assertEquals(Kind.Single, defA.kind)
-        Assert.assertEquals(scopeKey, defA.scopeDefinition.qualifier)
-        Assert.assertNotNull(scope.get<Simple.ComponentA>())
+        assertEquals(Kind.Single, defA.kind)
+        assertEquals(scopeKey, defA.scopeDefinition.qualifier)
+        assertNotNull(scope.get<Simple.ComponentA>())
 
         app.unloadModules(module)
 
-        Assert.assertNull(scope.getBeanDefinition(clazz = Simple.ComponentA::class))
+        assertNull(scope.findScope().getBeanDefinition(clazz = Simple.ComponentA::class))
 
         try {
             scope.get<Simple.ComponentA>()
@@ -266,18 +265,18 @@ class DynamicModulesTest : KoinCoreTest() {
         val koin = app.koin
 
         val scope = app.koin.createScope("id", scopeKey)
-        val defA = scope.getBeanDefinition(clazz = Simple.ComponentA::class)
+        val defA = scope.findScope().getBeanDefinition(clazz = Simple.ComponentA::class)
             ?: error("no definition found")
 
-        Assert.assertEquals(Kind.Single, defA.kind)
-        Assert.assertEquals(scopeKey, defA.scopeDefinition.qualifier)
-        Assert.assertNotNull(scope.get<Simple.ComponentA>())
+        assertEquals(Kind.Single, defA.kind)
+        assertEquals(scopeKey, defA.scopeDefinition.qualifier)
+        assertNotNull(scope.get<Simple.ComponentA>())
 
         koin.unloadModules(listOf(module))
         koin.loadModules(listOf(module))
 
         scope.get<Simple.ComponentA>()
-        Assert.assertNotNull(scope.getBeanDefinition(clazz = Simple.ComponentA::class))
+        assertNotNull(scope.findScope().getBeanDefinition(clazz = Simple.ComponentA::class))
     }
 
     @Test
@@ -294,7 +293,7 @@ class DynamicModulesTest : KoinCoreTest() {
         }
 
         val scope = GlobalContext.get().createScope("id", scopeKey)
-        Assert.assertNotNull(scope.get<Simple.ComponentA>())
+        assertNotNull(scope.get<Simple.ComponentA>())
 
         unloadKoinModules(module)
         loadKoinModules(module)

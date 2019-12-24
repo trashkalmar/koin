@@ -10,7 +10,7 @@ internal expect fun Any.ensureNeverFrozen()
 
 internal expect fun <T> T.freeze(): T
 
-internal expect val isMainThread:Boolean
+internal expect val isMainThread: Boolean
 
 expect object KoinMultiPlatform {
 //    fun <K, V> emptyMutableMap(): MutableMap<K, V>
@@ -32,4 +32,8 @@ expect object KoinMultiPlatform {
     fun className(kClass: KClass<*>): String
 
     fun printStackTrace(throwable: Throwable)
+}
+
+internal fun Throwable.printStackTrace() {
+    KoinMultiPlatform.printStackTrace(this)
 }

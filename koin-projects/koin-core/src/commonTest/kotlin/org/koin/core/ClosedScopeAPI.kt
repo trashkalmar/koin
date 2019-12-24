@@ -1,14 +1,15 @@
 package org.koin.core
 
-import org.junit.Assert
-import org.junit.Assert.fail
+import kotlin.test.fail
 import kotlin.test.Test
 import org.koin.Simple
 import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
-import org.koin.core.scope.Scope
+import org.koin.core.scope.ScopeBasedInteractor
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 class ClosedScopeAPI {
 
@@ -31,7 +32,7 @@ class ClosedScopeAPI {
 
         val scope1 = koin.createScope("scope1", named<ScopeType>())
         val scope2 = koin.createScope("scope2", named<ScopeType>())
-        Assert.assertNotEquals(scope1.get<Simple.ComponentA>(), scope2.get<Simple.ComponentA>())
+        assertNotEquals(scope1.get<Simple.ComponentA>(), scope2.get<Simple.ComponentA>())
     }
 
     @Test
@@ -48,8 +49,8 @@ class ClosedScopeAPI {
         }.koin
 
         val scope = koin.createScope("myScope", named<ScopeType>())
-        Assert.assertEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
-        Assert.assertEquals(scope.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
+        assertEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
+        assertEquals(scope.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
     }
 
     @Test
@@ -66,8 +67,8 @@ class ClosedScopeAPI {
         }.koin
 
         val scope = koin.createScope("myScope", named<ScopeType>())
-        Assert.assertNotEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
-        Assert.assertEquals(scope.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
+        assertNotEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
+        assertEquals(scope.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
     }
 
     @Test
@@ -84,8 +85,8 @@ class ClosedScopeAPI {
         }.koin
 
         val scope = koin.createScope("myScope", named<ScopeType>())
-        Assert.assertNotEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
-        Assert.assertEquals(koin.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
+        assertNotEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
+        assertEquals(koin.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
     }
 
     @Test
@@ -110,8 +111,8 @@ class ClosedScopeAPI {
         }.koin
 
         val scope = koin.createScope("myScope", named<ScopeType>())
-        Assert.assertEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
-        Assert.assertEquals(scope.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
+        assertEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
+        assertEquals(scope.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
     }
 
     @Test
@@ -128,8 +129,8 @@ class ClosedScopeAPI {
         }.koin
 
         val scope = koin.createScope("myScope", named(scopeName))
-        Assert.assertEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
-        Assert.assertEquals(scope.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
+        assertEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
+        assertEquals(scope.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
     }
 
     @Test
@@ -146,8 +147,8 @@ class ClosedScopeAPI {
         }.koin
 
         val scope = koin.createScope("myScope", named(scopeName))
-        Assert.assertEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
-        Assert.assertEquals(scope.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
+        assertEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
+        assertEquals(scope.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
     }
 
     @Test
@@ -164,8 +165,8 @@ class ClosedScopeAPI {
         }.koin
 
         val scope = koin.createScope("myScope", named(scopeName))
-        Assert.assertEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
-        Assert.assertNotEquals(scope.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
+        assertEquals(scope.get<Simple.ComponentB>(), scope.get<Simple.ComponentB>())
+        assertNotEquals(scope.get<Simple.ComponentA>(), scope.get<Simple.ComponentB>().a)
     }
 
     @Test
@@ -201,7 +202,7 @@ class ClosedScopeAPI {
                             scoped { Simple.ComponentA() }
                         }
                         scope(named("SCOPE_2")) {
-                            scoped { (scope: Scope) -> Simple.ComponentB(scope.get()) }
+                            scoped { (scope: ScopeBasedInteractor) -> Simple.ComponentB(scope.get()) }
                         }
                     }
             )
@@ -212,7 +213,7 @@ class ClosedScopeAPI {
         val b = scope2.get<Simple.ComponentB> { parametersOf(scope1) }
         val a = scope1.get<Simple.ComponentA>()
 
-        Assert.assertEquals(a, b.a)
+        assertEquals(a, b.a)
     }
 
     @Test
@@ -230,6 +231,6 @@ class ClosedScopeAPI {
         val scope1 = koin.createScope("myScope1", named("SCOPE_1"))
         val parameters = 42
         val a = scope1.get<Simple.MySingle> { parametersOf(parameters) }
-        Assert.assertEquals(parameters, a.id)
+        assertEquals(parameters, a.id)
     }
 }

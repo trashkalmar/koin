@@ -22,6 +22,8 @@ import org.koin.core.module.Module
 import org.koin.dsl.KoinAppDeclaration
 import kotlin.jvm.JvmStatic
 
+internal var koin: Koin? = null
+
 /**
  * Global context - current Koin Application available globally
  *
@@ -29,8 +31,6 @@ import kotlin.jvm.JvmStatic
  *
  */
 object GlobalContext {
-
-    internal var koin: Koin? = null
 
     /**
      * StandAlone Koin App instance

@@ -5,6 +5,7 @@ buildscript {
     repositories {
         google()
         jcenter()
+      mavenLocal()
     }
     dependencies {
         // Kotlin
@@ -24,6 +25,7 @@ allprojects {
     repositories {
         google()
         jcenter()
+      mavenLocal()
     }
 
     group = 'org.koin'
