@@ -25,3 +25,5 @@ include 'koin-core'
 //include 'koin-ktor'
 //// Kto Sample
 //include 'examples:hello-ktor'
+
+enableFeaturePreview('GRADLE_METADATA')

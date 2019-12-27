@@ -3,6 +3,7 @@ package org.koin.dsl
 import kotlin.test.*
 import kotlin.test.Test
 import org.koin.Simple
+import org.koin.core.definition.ThreadScope
 import org.koin.core.error.NoBeanDefFoundException
 import org.koin.core.logger.Level
 import org.koin.core.qualifier.named
@@ -140,7 +141,7 @@ class AdditionalTypeBindingTest {
             printLogger()
             modules(
                     module {
-                        single { Simple.Component1() } binds arrayOf(
+                        single(threadScope = ThreadScope.Shared) { Simple.Component1() } binds arrayOf(
                                 Simple.ComponentInterface1::class,
                                 Simple.ComponentInterface2::class
                         )

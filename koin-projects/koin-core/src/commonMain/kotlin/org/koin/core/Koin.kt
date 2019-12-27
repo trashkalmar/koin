@@ -15,8 +15,6 @@
  */
 package org.koin.core
 
-import org.koin.core.definition.ThreadScope
-import org.koin.core.error.MissingPropertyException
 import org.koin.core.error.ScopeNotCreatedException
 import org.koin.core.logger.EmptyLogger
 import org.koin.core.logger.Level
@@ -26,12 +24,13 @@ import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.registry.PropertyRegistry
 import org.koin.core.registry.ScopeRegistry
-import org.koin.core.scope.ScopeBasedInteractor
+import org.koin.core.scope.Scope
 import org.koin.core.scope.ScopeID
-import org.koin.core.scope.ScopeRef
-import org.koin.core.scope.ScopeStorage
+import org.koin.core.state.CallerThreadContext
+import org.koin.core.state.MainIsolatedState
+import org.koin.core.state.mainOrBlock
+import org.koin.core.state.value
 import kotlin.jvm.JvmOverloads
-import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KClass
 
 /**
@@ -41,33 +40,154 @@ import kotlin.reflect.KClass
  *
  * @author Arnaud Giuliani
  */
-internal expect class KoinState(koin:Koin) {
-    val _scopeRegistry: ScopeRegistry
-    val _propertyRegistry: PropertyRegistry
-    var _logger: Logger
-    val _modules :MutableSet<Module>
+internal class KoinState(koin: Koin) {
+    val _scopeRegistry: ScopeRegistry = ScopeRegistry(koin)
+    val _propertyRegistry: PropertyRegistry = PropertyRegistry(koin)
+    var _logger: Logger = EmptyLogger()
+    val _modules: MutableSet<Module> = hashSetOf()
 }
 
-class Koin: ScopeBasedInteractor() {
+class Koin {
 
-    var _logger: Logger = EmptyLogger()
-    internal val _koinState = KoinState(this)
+    internal val _koinState = MainIsolatedState(KoinState(this))
+
+    val _scopeRegistry: ScopeRegistry
+        get() = _koinState.value._scopeRegistry
+    val _propertyRegistry: PropertyRegistry
+        get() = _koinState.value._propertyRegistry
+    val _modules: MutableSet<Module>
+        get() = _koinState.value._modules
+    var _logger: Logger
+    get() = _koinState.value._logger
+    set(value) {
+        _koinState.value._logger = value
+    }
+
+
+    /**
+     * Lazy inject a Koin instance
+     * @param qualifier
+     * @param scope
+     * @param parameters
+     *
+     * @return Lazy instance of type T
+     */
+    @JvmOverloads
+    inline fun <reified T> inject(
+            qualifier: Qualifier? = null,
+            noinline parameters: ParametersDefinition? = null
+    ): Lazy<T> = _scopeRegistry.rootScope.inject(qualifier, parameters)
+
+    /**
+     * Lazy inject a Koin instance if available
+     * @param qualifier
+     * @param scope
+     * @param parameters
+     *
+     * @return Lazy instance of type T or null
+     */
+    @JvmOverloads
+    inline fun <reified T> injectOrNull(
+            qualifier: Qualifier? = null,
+            noinline parameters: ParametersDefinition? = null
+    ): Lazy<T?> = _scopeRegistry.rootScope.injectOrNull(qualifier, parameters)
+
+    /**
+     * Get a Koin instance
+     * @param qualifier
+     * @param scope
+     * @param parameters
+     */
+    @JvmOverloads
+    inline fun <reified T> get(
+            qualifier: Qualifier? = null,
+            noinline parameters: ParametersDefinition? = null
+    ): T = mainOrBlock { _scopeRegistry.rootScope.get(qualifier, it, parameters) }
+
+    /**
+     * Get a Koin instance if available
+     * @param qualifier
+     * @param scope
+     * @param parameters
+     *
+     * @return instance of type T or null
+     */
+    @JvmOverloads
+    inline fun <reified T> getOrNull(
+            qualifier: Qualifier? = null,
+            noinline parameters: ParametersDefinition? = null
+    ): T? = mainOrBlock { _scopeRegistry.rootScope.getOrNull(qualifier, it, parameters) }
+
+    /**
+     * Get a Koin instance
+     * @param clazz
+     * @param qualifier
+     * @param scope
+     * @param parameters
+     *
+     * @return instance of type T
+     */
+    fun <T> get(
+            clazz: KClass<*>,
+            qualifier: Qualifier? = null,
+            parameters: ParametersDefinition? = null
+    ): T = mainOrBlock { _scopeRegistry.rootScope.get(clazz, qualifier, it, parameters) }
+
+
+    /**
+     * Declare a component definition from the given instance
+     * This result of declaring a single definition of type T, returning the given instance
+     *
+     * @param instance The instance you're declaring.
+     * @param qualifier Qualifier for this declaration
+     * @param secondaryTypes List of secondary bound types
+     * @param override Allows to override a previous declaration of the same type (default to false).
+     */
+    fun <T : Any> declare(
+            instance: T,
+            qualifier: Qualifier? = null,
+            secondaryTypes: List<KClass<*>>? = null,
+            override: Boolean = false
+    ) {
+        _scopeRegistry.rootScope.declare(instance, qualifier, secondaryTypes, override)
+    }
+
+    /**
+     * Get a all instance for given inferred class (in primary or secondary type)
+     *
+     * @return list of instances of type T
+     */
+    inline fun <reified T : Any> getAll(): List<T> = mainOrBlock { _scopeRegistry.rootScope.getAll() }
+
+    /**
+     * Get instance of primary type P and secondary type S
+     * (not for scoped instances)
+     *
+     * @return instance of type S
+     */
+    inline fun <reified S, reified P> bind(noinline parameters: ParametersDefinition? = null): S =
+            mainOrBlock { _scopeRegistry.rootScope.bind<S, P>(parameters) }
+
+    /**
+     * Get instance of primary type P and secondary type S
+     * (not for scoped instances)
+     *
+     * @return instance of type S
+     */
+    fun <S> bind(
+            primaryType: KClass<*>,
+            secondaryType: KClass<*>,
+            parameters: ParametersDefinition? = null
+    ): S = mainOrBlock { _scopeRegistry.rootScope.bind(primaryType, secondaryType, parameters) }
 
     internal fun createEagerInstances() {
         createContextIfNeeded()
-        mainOrBust {
-            rootScopeStorage().createEagerInstances()
-        }
+        _scopeRegistry.rootScope.createEagerInstances()
     }
 
-    fun rootScopeStorage() = _koinState._scopeRegistry.rootScope
-
     internal fun createContextIfNeeded() {
-        mainOrBust {
-            val _scopeRegistry = _koinState._scopeRegistry
-            if (_scopeRegistry._rootScope == null) {
-                _scopeRegistry.createRootScope()
-            }
+        if (_scopeRegistry._rootScope == null) {
+            _scopeRegistry.createRootScope()
         }
     }
 
@@ -76,13 +196,11 @@ class Koin: ScopeBasedInteractor() {
      * @param scopeId
      * @param scopeDefinitionName
      */
-    fun createScope(scopeId: ScopeID, qualifier: Qualifier): ScopeRef {
+    fun createScope(scopeId: ScopeID, qualifier: Qualifier, callerThreadContext: CallerThreadContext? = null): Scope = mainOrBlock(callerThreadContext) { threadContext ->
         if (_logger.isAt(Level.DEBUG)) {
-            _logger.debug("!- create scope - id:'$scopeId' q:$qualifier")
+            _logger.debug("!- create scope - id:'$scopeId' q:$qualifier callerThread:$threadContext")
         }
-        return mainOrBust {
-            _koinState._scopeRegistry.createScope(scopeId, qualifier).ref
-        }
+        _scopeRegistry.createScope(scopeId, qualifier)
     }
 
     /**
@@ -90,41 +208,32 @@ class Koin: ScopeBasedInteractor() {
      * @param scopeId
      * @param qualifier
      */
-    fun getOrCreateScope(scopeId: ScopeID, qualifier: Qualifier): ScopeRef {
-        return mainOrBust {
-            _koinState._scopeRegistry.getScopeOrNull(scopeId)?.ref ?: createScope(scopeId, qualifier)
-        }
-    }
-
-    /**
-     * get a scope instance. The ScopeRef could just be creted, but we want to check that
-     * the scope currently exists.
-     * @param scopeId
-     */
-    override fun getScope(scopeId: ScopeID): ScopeRef {
-        return mainOrBust {
-            _koinState._scopeRegistry.getScopeOrNull(scopeId)?.ref
-                    ?: throw ScopeNotCreatedException("No scope found for id '$scopeId'")
-        }
+    fun getOrCreateScope(scopeId: ScopeID, qualifier: Qualifier): Scope = mainOrBlock {callerThreadContext ->
+        _scopeRegistry.getScopeOrNull(scopeId) ?: createScope(scopeId, qualifier, callerThreadContext)
     }
 
     /**
      * get a scope instance
      * @param scopeId
      */
-    fun getScopeOrNull(scopeId: ScopeID): ScopeRef? {
-        return mainOrBust {
-            _koinState._scopeRegistry.getScopeOrNull(scopeId)?.ref
-        }
+    fun getScope(scopeId: ScopeID): Scope = mainOrBlock {
+        _scopeRegistry.getScopeOrNull(scopeId)
+                ?: throw ScopeNotCreatedException("No scope found for id '$scopeId'")
+    }
+
+    /**
+     * get a scope instance
+     * @param scopeId
+     */
+    fun getScopeOrNull(scopeId: ScopeID): Scope? = mainOrBlock {
+        _scopeRegistry.getScopeOrNull(scopeId)
     }
 
     /**
      * Delete a scope instance
      */
-    fun deleteScope(scopeId: ScopeID) {
-        mainOrBust {
-            _koinState._scopeRegistry.deleteScope(scopeId)
-        }
+    fun deleteScope(scopeId: ScopeID) = mainOrBlock {
+        _scopeRegistry.deleteScope(scopeId)
     }
 
     /**
@@ -132,17 +241,16 @@ class Koin: ScopeBasedInteractor() {
      * @param key
      * @param defaultValue
      */
-    override fun <T> getProperty(key: String, defaultValue: T): T {
-        return mainOrBlock { _koinState._propertyRegistry.getProperty<T>(key) ?: defaultValue }
+    fun <T> getProperty(key: String, defaultValue: T): T {
+        return mainOrBlock { _propertyRegistry.getProperty<T>(key) ?: defaultValue }
     }
 
     /**
      * Retrieve a property
      * @param key
      */
-    override fun <T> getProperty(key: String): T {
-        return mainOrBlock {
-            _koinState._propertyRegistry.getProperty(key)?:throw MissingPropertyException("Property '$key' not found") }
+    fun <T> getProperty(key: String): T? {
+        return mainOrBlock { _propertyRegistry.getProperty(key) }
     }
 
     /**
@@ -151,89 +259,31 @@ class Koin: ScopeBasedInteractor() {
      * @param value
      */
     fun <T : Any> setProperty(key: String, value: T) {
-        mainOrBlock { _koinState._propertyRegistry.saveProperty(key, value) }
+        mainOrBlock { _propertyRegistry.saveProperty(key, value) }
     }
 
     /**
      * Close all resources from context
      */
-    fun close() {
-        mainOrBust {
-            _koinState._modules.forEach { it.isLoaded = false }
-            _koinState._modules.clear()
-            _koinState._scopeRegistry.close()
-            _koinState._propertyRegistry.close()
-        }
+    fun close() = mainOrBlock {
+        _modules.forEach { it.isLoaded = false }
+        _modules.clear()
+        _scopeRegistry.close()
+        _propertyRegistry.close()
     }
 
-    fun loadModules(modules: List<Module>) {
-        mainOrBust {
-            _koinState._modules.addAll(modules)
-            _koinState._scopeRegistry.loadModules(modules)
-        }
+    fun loadModules(modules: List<Module>) = mainOrBlock {
+        _modules.addAll(modules)
+        _scopeRegistry.loadModules(modules)
     }
 
 
-    fun unloadModules(modules: List<Module>) {
-        mainOrBust {
-            _koinState._scopeRegistry.unloadModules(modules)
-            _koinState._modules.removeAll(modules)
-        }
+    fun unloadModules(modules: List<Module>) = mainOrBlock {
+        _scopeRegistry.unloadModules(modules)
+        _modules.removeAll(modules)
     }
 
-    fun createRootScope() {
-        mainOrBust {
-            _koinState._scopeRegistry.createRootScope()
-        }
+    fun createRootScope() = mainOrBlock {
+        _scopeRegistry.createRootScope()
     }
-
-    internal fun createRootScopeDefinition() {
-        mainOrBust {
-            _koinState._scopeRegistry.createRootScopeDefinition()
-        }
-    }
-
-    internal fun scopeRegistrySize(): Int = mainOrBlock {
-        _koinState._scopeRegistry.size()
-    }
-
-    internal fun saveProperties(values: Map<String, Any>) = mainOrBlock {
-        _koinState._propertyRegistry.saveProperties(values)
-    }
-
-    internal fun unloadModules(module: Module) {
-        unloadModules(listOf(module))
-    }
-
-    override fun findScope(): ScopeStorage = rootScopeStorage()
-}
-
-internal fun assertMainThread() {
-    if (!isMainThread)
-        throw IllegalStateException("Must be main thread")
-}
-
-fun <R> mainOrBust(block: () -> R): R {
-    assertMainThread()
-    return block()
-}
-
-enum class CallerThreadContext {
-    Main, Other
-}
-
-fun <R> mainOrBlock(block: (CallerThreadContext) -> R): R {
-    return if (isMainThread) {
-        block(CallerThreadContext.Main)
-    } else {
-        TODO()
-    }
-}
-
-/**
- * Give full class qualifier
- */
-private var _classNames: HashMap<KClass<*>, String> = hashMapOf()
-internal fun KClass<*>.getFullName(): String = mainOrBust {
-    _classNames.getOrPut(this) { KoinMultiPlatform.className(this) }
 }

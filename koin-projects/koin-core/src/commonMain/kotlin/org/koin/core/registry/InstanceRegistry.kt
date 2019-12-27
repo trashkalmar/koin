@@ -11,12 +11,10 @@ import org.koin.core.instance.InstanceFactory
 import org.koin.core.instance.SingleInstanceFactory
 import org.koin.core.logger.Level
 import org.koin.core.parameter.ParametersDefinition
-import org.koin.core.scope.ScopeStorage
+import org.koin.core.scope.Scope
 import kotlin.reflect.KClass
 
-internal class InstanceRegistry(val _koin: Koin, val _scope: ScopeStorage) {
-
-    //TODO Lock - ConcurrentHashMap
+class InstanceRegistry(val _koin: Koin, val _scope: Scope) {
     private val _instances = HashMap<IndexKey, InstanceFactory<*>>()
     val instances: Map<IndexKey, InstanceFactory<*>>
         get() = _instances
@@ -88,7 +86,7 @@ internal class InstanceRegistry(val _koin: Koin, val _scope: ScopeStorage) {
     }
 
     private fun defaultInstanceContext(parameters: ParametersDefinition?) =
-            InstanceContext(_koin, _scope.scopeBasedInteractor, parameters)
+            InstanceContext(_koin, _scope, parameters)
 
     internal fun close() {
         _instances.values.forEach { it.drop() }
@@ -100,7 +98,7 @@ internal class InstanceRegistry(val _koin: Koin, val _scope: ScopeStorage) {
                 .filter { instance -> instance.beanDefinition.options.isCreatedAtStart }
                 .forEach { instance ->
                     instance.get(
-                            InstanceContext(_koin, _scope.scopeBasedInteractor)
+                            InstanceContext(_koin, _scope)
                     )
                 }
     }

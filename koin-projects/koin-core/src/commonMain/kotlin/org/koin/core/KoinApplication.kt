@@ -19,6 +19,7 @@ import org.koin.core.logger.Level
 import org.koin.core.logger.Logger
 import org.koin.core.logger.PrintLogger
 import org.koin.core.module.Module
+import org.koin.core.state.value
 import org.koin.core.time.measureDuration
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
@@ -34,7 +35,7 @@ class KoinApplication private constructor() {
     val koin = Koin()
 
     internal fun init() {
-        koin.createRootScopeDefinition()
+        koin._koinState.value._scopeRegistry.createRootScopeDefinition()
     }
 
     /**
@@ -62,7 +63,7 @@ class KoinApplication private constructor() {
             val duration = measureDuration {
                 loadModules(modules)
             }
-            val count = koin.scopeRegistrySize()
+            val count = koin._koinState.value._scopeRegistry.size()
             koin._logger.info("loaded $count definitions - $duration ms")
         } else {
             loadModules(modules)
@@ -87,7 +88,7 @@ class KoinApplication private constructor() {
      * @param values
      */
     fun properties(values: Map<String, Any>): KoinApplication {
-        koin.saveProperties(values)
+        koin._koinState.value._propertyRegistry.saveProperties(values)
         return this
     }
 
@@ -126,11 +127,11 @@ class KoinApplication private constructor() {
     }
 
     fun unloadModules(module: Module) {
-        koin.unloadModules(module)
+        koin._koinState.value._scopeRegistry.unloadModules(module)
     }
 
     fun unloadModules(modules: List<Module>) {
-        koin.unloadModules(modules)
+        koin._koinState.value._scopeRegistry.unloadModules(modules)
     }
 
 

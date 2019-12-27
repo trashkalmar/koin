@@ -1,7 +1,31 @@
 ![logo](./img/koin_2.0.jpg)
 
-## What is KOIN?
- 
+## What is ~KOIN~ KHAN?
+
+KOIN is "A pragmatic lightweight dependency injection framework for Kotlin developers."
+
+KHAN is a fork of KOIN designed for use in a multiplatform environment. It differs from KOIN and other multiplatform DI options in that it is explicit about what state is mutable and from what threads you can perform operations.
+
+Primarily the goal is to create a DI framework that works well within Kotlin/Native's state and concurrency model, but also acts the same when being used from the JVM. Native's state model is an attempt to ensure safe mutability. If you are able to follow it's rules in the JVM, that's probably a good thing.
+
+KHAN is experimental. As we're rethinking architecture with Native, we're rethinking state and mutability. Details may change over time. Also, the hope is that ideas from KHAN are incorporated back into KOIN and we can have just "KOIN", but it would take a lot of discussion to try to build this into KOIN directly, so we're starting with a fork.
+
+## What are the rules?
+
+All mutable state in KHAN is restricted to the main thread. In general, DI is done on the main thread anyway. By default, if you attempt to get or inject from a thread that isn't the main thread, you'll get an exception. You can override this behavior, but you must do so at config time, and do so explicitly by way of a `ThreadScope` parameter.
+
+```kotlin
+single(threadScope = ThreadScope.Shared) { Simple.Component1() }
+```
+
+This will allow you to inject the single from a background thread.
+
+All config is done in the main thread.
+
+One of the goals is to remain source compatible with KOIN, so if you only interact with KHAN on the main thread, you shouldn't need to change anything.
+
+## Original KOIN Docs
+
 A pragmatic lightweight dependency injection framework for Kotlin developers.
 
 Written in pure Kotlin, using functional resolution only: no proxy, no code generation, no reflection.
@@ -21,7 +45,7 @@ Documentation:
 * [Getting Stared](https://start.insert-koin.io/)
 * [Documentation References](https://doc.insert-koin.io/)
 
-Any question about Koin usage? 
+Any question about Koin usage?
 - Come talk on slack [#koin](https://kotlinlang.slack.com/?redir=%2Fmessages%2Fkoin) channel
 - Post your question on [Stackoverflow - #koin tag](https://stackoverflow.com/questions/tagged/koin)
 
@@ -36,7 +60,7 @@ Found a bug or a problem on a specific feature? Open an issue on [Github issues]
 
 ### Contributing 🛠
 
-Want to help or share a proposal about Koin? problem on a specific feature? 
+Want to help or share a proposal about Koin? problem on a specific feature?
 
 - Open an issue to explain the issue you want to solve [Open an issue](https://github.com/InsertKoinIO/koin/issues)
 - Come talk on slack [#koin-dev](https://kotlinlang.slack.com/?redir=%2Fmessages%2Fkoin-dev) channel
@@ -56,11 +80,11 @@ koin_version = '2.0.1'
 koin_version = '2.1.0-alpha-7'
 ```
 
-## Gradle 
+## Gradle
 
-### Jcenter 
+### Jcenter
 
-Check that you have the `jcenter` repository. 
+Check that you have the `jcenter` repository.
 
 ```gradle
 // Add Jcenter to your repositories if needed
@@ -128,15 +152,15 @@ implementation "org.koin:koin-ktor:$koin_version"
 Write with the Koin DSL what you need to assemble:
 
 ```kotlin
-// Given some classes 
-class Controller(val service : BusinessService) 
-class BusinessService() 
+// Given some classes
+class Controller(val service : BusinessService)
+class BusinessService()
 
-// just declare it 
-val myModule = module { 
-  single { Controller(get()) } 
-  single { BusinessService() } 
-} 
+// just declare it
+val myModule = module {
+  single { Controller(get()) }
+  single { BusinessService() }
+}
 ```
 
 ## Starting Koin
@@ -146,13 +170,13 @@ Use the startKoin() function to start Koin in your application.
 In a Kotlin app:
 
 ```kotlin
-fun main(vararg args : String) { 
+fun main(vararg args : String) {
   // start Koin!
   startKoin {
     // your modules
     modules(myModule)
   }
-} 
+}
 ```
 
 In an Android app:
@@ -168,8 +192,8 @@ class MyApplication : Application() {
       // modules
       modules(myModule)
     }
-  } 
-} 
+  }
+}
 ```
 
 # Talking about Koin
@@ -230,7 +254,7 @@ This project exists thanks to all the people who contribute. [[Contribute](CONTR
 ## OpenCollective
 
 [![Backers on Open Collective](https://opencollective.com/koin/backers/badge.svg)](#backers)
-[![Sponsors on Open Collective](https://opencollective.com/koin/sponsors/badge.svg)](#sponsors) 
+[![Sponsors on Open Collective](https://opencollective.com/koin/sponsors/badge.svg)](#sponsors)
 
 ### Backers
 
@@ -253,5 +277,3 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/koin/sponsor/7/website" target="_blank"><img src="https://opencollective.com/koin/sponsor/7/avatar.svg"></a>
 <a href="https://opencollective.com/koin/sponsor/8/website" target="_blank"><img src="https://opencollective.com/koin/sponsor/8/avatar.svg"></a>
 <a href="https://opencollective.com/koin/sponsor/9/website" target="_blank"><img src="https://opencollective.com/koin/sponsor/9/avatar.svg"></a>
-
-

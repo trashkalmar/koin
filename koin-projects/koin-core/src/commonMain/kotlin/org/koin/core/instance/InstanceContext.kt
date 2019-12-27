@@ -4,7 +4,7 @@ import org.koin.core.Koin
 import org.koin.core.parameter.DefinitionParameters
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.parameter.emptyParametersHolder
-import org.koin.core.scope.ScopeBasedInteractor
+import org.koin.core.scope.Scope
 
 
 /**
@@ -13,7 +13,7 @@ import org.koin.core.scope.ScopeBasedInteractor
  */
 class InstanceContext(
     val koin: Koin,
-    val scope: ScopeBasedInteractor,
+    val scope: Scope,
     _parameters: ParametersDefinition? = null
 ) {
     val parameters: DefinitionParameters = _parameters?.invoke() ?: emptyParametersHolder()

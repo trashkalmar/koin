@@ -25,32 +25,32 @@ import org.koin.core.scope.ScopeDefinition
 class ScopeDSL(val scopeDefinition: ScopeDefinition) {
 
     inline fun <reified T> scoped(
-        qualifier: Qualifier? = null,
-        override: Boolean = false,
-        threadScope: ThreadScope = ThreadScope.Main,
-        noinline definition: Definition<T>
+            qualifier: Qualifier? = null,
+            override: Boolean = false,
+            threadScope: ThreadScope = ThreadScope.Main,
+            noinline definition: Definition<T>
     ): BeanDefinition<T> {
         return Definitions.saveSingle(
             qualifier,
             definition,
             scopeDefinition,
             Options(isCreatedAtStart = false, override = override),
-            threadScope
+                threadScope
         )
     }
 
     inline fun <reified T> factory(
-        qualifier: Qualifier? = null,
-        override: Boolean = false,
-        threadScope: ThreadScope = ThreadScope.Main,
-        noinline definition: Definition<T>
+            qualifier: Qualifier? = null,
+            override: Boolean = false,
+            threadScope: ThreadScope = ThreadScope.Main,
+            noinline definition: Definition<T>
     ): BeanDefinition<T> {
         return Definitions.saveFactory(
             qualifier,
             definition,
             scopeDefinition,
             Options(isCreatedAtStart = false, override = override),
-            threadScope
+                threadScope
         )
     }
 }

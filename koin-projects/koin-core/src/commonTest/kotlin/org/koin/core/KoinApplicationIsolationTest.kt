@@ -7,6 +7,7 @@ import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.qualifier.named
+import org.koin.core.state.value
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.koin.test.getBeanDefinition
@@ -48,7 +49,7 @@ class KoinApplicationIsolationTest {
         app.createEagerInstances()
 
         val def = app.getBeanDefinition(Simple.ComponentA::class)!!
-        assertTrue(app.koin._koinState._scopeRegistry._rootScope!!._instanceRegistry.instances.values
+        assertTrue(app.koin._koinState.value._scopeRegistry._rootScope!!.scopeState.value._instanceRegistry.instances.values
             .first { instanceFactory -> instanceFactory.beanDefinition.primaryType == Simple.ComponentA::class }.isCreated()
         )
     }

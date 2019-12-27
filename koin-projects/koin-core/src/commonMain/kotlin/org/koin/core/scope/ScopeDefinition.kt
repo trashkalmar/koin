@@ -7,30 +7,33 @@ import org.koin.core.definition.ThreadScope
 import org.koin.core.error.DefinitionOverrideException
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.qualifier._q
+import org.koin.core.state.MainIsolatedState
+import org.koin.core.state.value
 import kotlin.reflect.KClass
 
 /**
  * Internal Scope Definition
  */
-class ScopeDefinition(val qualifier: Qualifier, val isRoot: Boolean = false, private val _definitions: HashSet<BeanDefinition<*>> = hashSetOf()) {
+class ScopeDefinition(val qualifier: Qualifier, val isRoot: Boolean = false, _def: HashSet<BeanDefinition<*>> = hashSetOf()) {
 
+    private val _definitions: MainIsolatedState<HashSet<BeanDefinition<*>>> = MainIsolatedState(_def)
     val definitions: Set<BeanDefinition<*>>
-        get() = _definitions
+        get() = _definitions.value
 
     fun save(beanDefinition: BeanDefinition<*>, forceOverride: Boolean = false) {
         if (definitions.contains(beanDefinition)) {
             if (beanDefinition.options.override || forceOverride) {
-                _definitions.remove(beanDefinition)
+                _definitions.value.remove(beanDefinition)
             } else {
                 val current = definitions.firstOrNull { it == beanDefinition }
                 throw DefinitionOverrideException("Definition '$beanDefinition' try to override existing definition. Please use override option or check for definition '$current'")
             }
         }
-        _definitions.add(beanDefinition)
+        _definitions.value.add(beanDefinition)
     }
 
     fun remove(beanDefinition: BeanDefinition<*>) {
-        _definitions.remove(beanDefinition)
+        _definitions.value.remove(beanDefinition)
     }
 
     internal fun size() = definitions.size
@@ -38,9 +41,9 @@ class ScopeDefinition(val qualifier: Qualifier, val isRoot: Boolean = false, pri
     fun <T : Any> saveNewDefinition(
             instance: T,
             qualifier: Qualifier? = null,
-            threadScope: ThreadScope,
             secondaryTypes: List<KClass<*>>? = null,
-            override: Boolean = false
+            override: Boolean = false,
+            threadScope: ThreadScope
     ): BeanDefinition<out Any?> {
         val clazz = instance::class
         val found: BeanDefinition<*>? =
@@ -67,7 +70,7 @@ class ScopeDefinition(val qualifier: Qualifier, val isRoot: Boolean = false, pri
 
     fun unloadDefinitions(scopeDefinition: ScopeDefinition) {
         scopeDefinition.definitions.forEach {
-            _definitions.remove(it)
+            _definitions.value.remove(it)
         }
     }
 
@@ -91,7 +94,7 @@ class ScopeDefinition(val qualifier: Qualifier, val isRoot: Boolean = false, pri
 
     fun copy(): ScopeDefinition {
         val copy = ScopeDefinition(qualifier, isRoot, HashSet())
-        copy._definitions.addAll(definitions)
+        copy._definitions.value.addAll(definitions)
         return copy
     }
 

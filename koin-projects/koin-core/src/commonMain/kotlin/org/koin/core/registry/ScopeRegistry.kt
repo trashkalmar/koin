@@ -22,9 +22,9 @@ import org.koin.core.error.ScopeAlreadyCreatedException
 import org.koin.core.module.Module
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.qualifier.QualifierValue
+import org.koin.core.scope.Scope
 import org.koin.core.scope.ScopeDefinition
 import org.koin.core.scope.ScopeID
-import org.koin.core.scope.ScopeStorage
 
 /**
  * Scope Registry
@@ -32,7 +32,7 @@ import org.koin.core.scope.ScopeStorage
  *
  * @author Arnaud Giuliani
  */
-internal class ScopeRegistry(private val _koin: Koin) {
+ class ScopeRegistry(private val _koin: Koin) {
     init {
         ensureNeverFrozen()
     }
@@ -41,13 +41,13 @@ internal class ScopeRegistry(private val _koin: Koin) {
     val scopeDefinitions: Map<QualifierValue, ScopeDefinition>
         get() = _scopeDefinitions
 
-    private val _scopes = HashMap<ScopeID, ScopeStorage>()
-    val scopes: Map<ScopeID, ScopeStorage>
+    private val _scopes = HashMap<ScopeID, Scope>()
+    val scopes: Map<ScopeID, Scope>
         get() = _scopes
 
     var _rootScopeDefinition: ScopeDefinition? = null
-    var _rootScope: ScopeStorage? = null
-    val rootScope: ScopeStorage
+    var _rootScope: Scope? = null
+    val rootScope: Scope
         get() = _rootScope ?: error("No root scoped initialized")
 
     fun size() = scopeDefinitions.values.map { it.size() }.sum()
@@ -113,18 +113,18 @@ internal class ScopeRegistry(private val _koin: Koin) {
         }
     }
 
-    fun getScopeOrNull(scopeId: ScopeID): ScopeStorage? {
+    fun getScopeOrNull(scopeId: ScopeID): Scope? {
         return scopes[scopeId]
     }
 
-    fun createScope(scopeId: ScopeID, qualifier: Qualifier): ScopeStorage {
+    fun createScope(scopeId: ScopeID, qualifier: Qualifier): Scope {
         if (scopes.contains(scopeId)) {
             throw ScopeAlreadyCreatedException("Scope with id '$scopeId' is already created")
         }
 
         val scopeDefinition = scopeDefinitions[qualifier.value]
         return if (scopeDefinition != null) {
-            val createdScope: ScopeStorage = createScope(scopeId, scopeDefinition)
+            val createdScope: Scope = createScope(scopeId, scopeDefinition)
             _scopes[scopeId] = createdScope
             createdScope
         } else {
@@ -132,8 +132,8 @@ internal class ScopeRegistry(private val _koin: Koin) {
         }
     }
 
-    private fun createScope(scopeId: ScopeID, scopeDefinition: ScopeDefinition): ScopeStorage {
-        val scope = ScopeStorage(scopeId, scopeDefinition, _koin)
+    private fun createScope(scopeId: ScopeID, scopeDefinition: ScopeDefinition): Scope {
+        val scope = Scope(scopeId, scopeDefinition, _koin)
         scope.create(_rootScope)
         return scope
     }
@@ -143,7 +143,7 @@ internal class ScopeRegistry(private val _koin: Koin) {
         _scopes.remove(scopeId)
     }
 
-    fun deleteScope(scope: ScopeStorage) {
+    fun deleteScope(scope: Scope) {
         _scopes.remove(scope.id)
     }
 

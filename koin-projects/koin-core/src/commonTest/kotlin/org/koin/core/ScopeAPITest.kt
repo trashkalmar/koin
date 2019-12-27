@@ -4,9 +4,9 @@ import org.koin.Simple
 import org.koin.core.error.NoScopeDefFoundException
 import org.koin.core.error.ScopeAlreadyCreatedException
 import org.koin.core.qualifier.named
+import org.koin.core.scope.Scope
 
 import org.koin.core.scope.ScopeCallback
-import org.koin.core.scope.ScopeRef
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import kotlin.test.*
@@ -118,7 +118,7 @@ class ScopeAPITest {
         val scope1 = koin.createScope(scopeId, scopeKey)
         var closed = false
         scope1.registerCallback(object : ScopeCallback {
-            override fun onScopeClose(scope: ScopeRef) {
+            override fun onScopeClose(scope: Scope) {
                 closed = true
             }
         })

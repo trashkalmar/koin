@@ -11,6 +11,7 @@ import org.koin.core.definition.ThreadScope
 import org.koin.core.instance.InstanceContext
 import org.koin.core.parameter.emptyParametersHolder
 import org.koin.core.qualifier.named
+import org.koin.core.state.value
 import org.koin.test.getBeanDefinition
 import org.koin.test.getInstanceFactory
 import kotlin.test.Test
@@ -20,21 +21,21 @@ import kotlin.test.assertTrue
 class BeanDefinitionTest {
 
     val koin = koinApplication { }.koin
-    val rootScope = koin._koinState._scopeRegistry.rootScope
+    val rootScope = koin._koinState.value._scopeRegistry.rootScope
 
     @Test
     fun `equals definitions`() {
 
         val def1 = Definitions.createSingle(
-                definition = { Simple.ComponentA() },
-                scopeDefinition = rootScope._scopeDefinition,
-                options = Options(),
+            definition = { Simple.ComponentA() },
+            scopeDefinition = rootScope._scopeDefinition,
+            options = Options(),
                 threadScope = ThreadScope.Main
         )
         val def2 = Definitions.createSingle(
-                definition = { Simple.ComponentA() },
-                scopeDefinition = rootScope._scopeDefinition,
-                options = Options(),
+            definition = { Simple.ComponentA() },
+            scopeDefinition = rootScope._scopeDefinition,
+            options = Options(),
                 threadScope = ThreadScope.Main
         )
         assertEquals(def1, def2)
@@ -43,9 +44,9 @@ class BeanDefinitionTest {
     @Test
     fun `scope definition`() {
         val def1 = Definitions.createSingle(
-                definition = { Simple.ComponentA() },
-                scopeDefinition = rootScope._scopeDefinition,
-                options = Options(),
+            definition = { Simple.ComponentA() },
+            scopeDefinition = rootScope._scopeDefinition,
+            options = Options(),
                 threadScope = ThreadScope.Main
         )
 
@@ -57,15 +58,15 @@ class BeanDefinitionTest {
     @Test
     fun `equals definitions - but diff kind`() {
         val def1 = Definitions.createSingle(
-                definition = { Simple.ComponentA() },
-                scopeDefinition = rootScope._scopeDefinition,
-                options = Options(),
+            definition = { Simple.ComponentA() },
+            scopeDefinition = rootScope._scopeDefinition,
+            options = Options(),
                 threadScope = ThreadScope.Main
         )
         val def2 = Definitions.createSingle(
-                definition = { Simple.ComponentA() },
-                scopeDefinition = rootScope._scopeDefinition,
-                options = Options(),
+            definition = { Simple.ComponentA() },
+            scopeDefinition = rootScope._scopeDefinition,
+            options = Options(),
                 threadScope = ThreadScope.Main
         )
         assertEquals(def1, def2)
@@ -75,10 +76,10 @@ class BeanDefinitionTest {
     fun `definition kind`() {
         val app = koinApplication {
             modules(
-                    module {
-                        single { Simple.ComponentA() }
-                        factory { Simple.ComponentB(get()) }
-                    }
+                module {
+                    single { Simple.ComponentA() }
+                    factory { Simple.ComponentB(get()) }
+                }
             )
         }
 
@@ -94,10 +95,10 @@ class BeanDefinitionTest {
         val name = named("A")
         val app = koinApplication {
             modules(
-                    module {
-                        single(name) { Simple.ComponentA() }
-                        factory { Simple.ComponentB(get()) }
-                    }
+                module {
+                    single(name) { Simple.ComponentA() }
+                    factory { Simple.ComponentB(get()) }
+                }
             )
         }
 
@@ -112,18 +113,18 @@ class BeanDefinitionTest {
     fun `definition function`() {
         val app = koinApplication {
             modules(
-                    module {
-                        single { Simple.ComponentA() }
-                    }
+                module {
+                    single { Simple.ComponentA() }
+                }
             )
         }
 
         app.getBeanDefinition(Simple.ComponentA::class) ?: error("no definition found")
         val instance = app.getInstanceFactory(Simple.ComponentA::class)!!.get(
-                InstanceContext(
-                        app.koin,
-                        rootScope.scopeBasedInteractor,
-                        _parameters = { emptyParametersHolder() })
+            InstanceContext(
+                app.koin,
+                rootScope,
+                _parameters = { emptyParametersHolder() })
         )
         assertEquals(instance, app.koin.get<Simple.ComponentA>())
     }

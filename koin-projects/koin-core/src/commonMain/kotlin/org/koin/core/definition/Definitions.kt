@@ -32,8 +32,8 @@ object Definitions {
             qualifier,
             definition,
             Kind.Single,
-                threadScope,
             options = options,
+                threadScope = threadScope,
             secondaryTypes = secondaryTypes
         )
     }
@@ -53,8 +53,8 @@ object Definitions {
             qualifier,
             definition,
             Kind.Single,
-            threadScope,
             options = options,
+                threadScope = threadScope,
             secondaryTypes = secondaryTypes
         )
     }
@@ -73,8 +73,8 @@ object Definitions {
             qualifier,
             definition,
             Kind.Factory,
-                threadScope,
             options = options,
+                threadScope = threadScope,
             secondaryTypes = secondaryTypes
         )
     }
@@ -85,6 +85,7 @@ object Definitions {
         scopeDefinition: ScopeDefinition,
         options: Options,
         threadScope: ThreadScope
+
     ): BeanDefinition<T> {
         val beanDefinition = createFactory(qualifier, definition, scopeDefinition, options, threadScope)
         scopeDefinition.save(beanDefinition)

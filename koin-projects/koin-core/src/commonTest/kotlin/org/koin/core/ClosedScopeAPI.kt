@@ -5,7 +5,7 @@ import kotlin.test.Test
 import org.koin.Simple
 import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
-import org.koin.core.scope.ScopeBasedInteractor
+import org.koin.core.scope.Scope
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import kotlin.test.assertEquals
@@ -202,7 +202,7 @@ class ClosedScopeAPI {
                             scoped { Simple.ComponentA() }
                         }
                         scope(named("SCOPE_2")) {
-                            scoped { (scope: ScopeBasedInteractor) -> Simple.ComponentB(scope.get()) }
+                            scoped { (scope: Scope) -> Simple.ComponentB(scope.get()) }
                         }
                     }
             )
