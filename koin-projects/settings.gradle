@@ -1,5 +1,15 @@
 // Core
 include 'koin-core'
+
+include 'koin-test'
+// Core Sample
+//include 'examples:coffee-maker'
+// Core extended
+//include 'koin-java', 'koin-core-ext'
+
+// Mock
+
+
 //include 'koin-test'
 //// Core Sample
 //include 'examples:coffee-maker'

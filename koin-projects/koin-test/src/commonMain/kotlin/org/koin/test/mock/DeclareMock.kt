@@ -22,8 +22,9 @@ import org.koin.core.error.NoBeanDefFoundException
 import org.koin.core.logger.Level
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.scope.Scope
+import org.koin.core.state.getFullName
 import org.koin.core.time.measureDurationForResult
-import org.koin.ext.getFullName
+
 import org.koin.test.KoinTest
 import kotlin.reflect.KClass
 

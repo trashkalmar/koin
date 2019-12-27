@@ -46,6 +46,8 @@ data class Scope(
         val _koin: Koin
 ) {
     internal val scopeState = MainIsolatedState(ScopeState(_koin, this))
+    val _instanceRegistry: InstanceRegistry
+        get() = scopeState.value._instanceRegistry
     val closed: Boolean
         get() = scopeState.value._closed
 

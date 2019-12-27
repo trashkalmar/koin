@@ -34,6 +34,6 @@ internal expect fun <R> runOnMain(block: () -> R): R
  */
 private var _classNames: HashMap<KClass<*>, String> = hashMapOf()
 
-internal fun KClass<*>.getFullName(): String = mainOrBust {
+fun KClass<*>.getFullName(): String = mainOrBust {
     _classNames.getOrPut(this) { KoinMultiPlatform.className(this) }
 }
