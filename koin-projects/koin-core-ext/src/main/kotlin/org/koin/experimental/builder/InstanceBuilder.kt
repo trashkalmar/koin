@@ -2,8 +2,8 @@ package org.koin.experimental.builder
 
 import org.koin.core.logger.Level
 import org.koin.core.scope.Scope
+import org.koin.core.state.getFullName
 import org.koin.core.time.measureDurationForResult
-import org.koin.ext.getFullName
 import java.lang.reflect.Constructor
 
 /**

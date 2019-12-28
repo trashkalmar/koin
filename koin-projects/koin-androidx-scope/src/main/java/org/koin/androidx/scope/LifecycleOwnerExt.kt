@@ -23,7 +23,7 @@ import org.koin.android.ext.android.getKoin
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.qualifier.TypeQualifier
 import org.koin.core.scope.Scope
-import org.koin.ext.getFullName
+import org.koin.core.state.getFullName
 
 /**
  * Provide an scope for given LifecycleOwner component

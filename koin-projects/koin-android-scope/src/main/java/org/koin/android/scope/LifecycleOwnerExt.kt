@@ -25,7 +25,7 @@ import org.koin.core.context.GlobalContext
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.qualifier.TypeQualifier
 import org.koin.core.scope.Scope
-import org.koin.ext.getFullName
+import org.koin.core.state.getFullName
 import java.lang.System.identityHashCode
 
 /**

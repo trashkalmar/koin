@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import org.koin.core.parameter.parametersOf
 import org.koin.core.scope.Scope
+import org.koin.core.scope.get
 
 /**
  * Create Bundle/State ViewModel Factory
@@ -40,7 +41,7 @@ fun <T : ViewModel> Scope.stateViewModelFactory(
 fun <T : ViewModel> Scope.defaultViewModelFactory(parameters: ViewModelParameter<T>): ViewModelProvider.Factory {
     return object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return get(parameters.clazz, parameters.qualifier, parameters.parameters)
+            return get(clazz = parameters.clazz, qualifier = parameters.qualifier, parameters = parameters.parameters)
         }
     }
 }

@@ -4,6 +4,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import org.koin.core.KoinComponent
 import org.koin.core.scope.Scope
+import org.koin.core.scope.get
 
 /**
  * FragmentFactory for Koin

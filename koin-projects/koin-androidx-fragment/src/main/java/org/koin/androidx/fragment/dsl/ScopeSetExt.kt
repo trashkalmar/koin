@@ -34,4 +34,4 @@ inline fun <reified T : Fragment> ScopeDSL.viewModel(
         qualifier: Qualifier? = null,
         override: Boolean = false,
         noinline definition: Definition<T>
-): BeanDefinition<T> = factory(qualifier, override, definition)
+): BeanDefinition<T> = factory(qualifier = qualifier, override = override, definition = definition)
