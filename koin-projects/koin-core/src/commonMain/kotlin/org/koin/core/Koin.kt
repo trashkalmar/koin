@@ -26,7 +26,6 @@ import org.koin.core.registry.PropertyRegistry
 import org.koin.core.registry.ScopeRegistry
 import org.koin.core.scope.Scope
 import org.koin.core.scope.ScopeID
-import org.koin.core.state.CallerThreadContext
 import org.koin.core.state.MainIsolatedState
 import org.koin.core.state.mainOrBlock
 import org.koin.core.state.value
@@ -102,7 +101,7 @@ class Koin {
     inline fun <reified T> get(
             qualifier: Qualifier? = null,
             noinline parameters: ParametersDefinition? = null
-    ): T = mainOrBlock { _scopeRegistry.rootScope.get(qualifier, it, parameters) }
+    ): T = mainOrBlock { _scopeRegistry.rootScope.get(qualifier, parameters) }
 
     /**
      * Get a Koin instance if available
@@ -116,7 +115,7 @@ class Koin {
     inline fun <reified T> getOrNull(
             qualifier: Qualifier? = null,
             noinline parameters: ParametersDefinition? = null
-    ): T? = mainOrBlock { _scopeRegistry.rootScope.getOrNull(qualifier, it, parameters) }
+    ): T? = mainOrBlock { _scopeRegistry.rootScope.getOrNull(qualifier, parameters) }
 
     /**
      * Get a Koin instance
@@ -131,7 +130,7 @@ class Koin {
             clazz: KClass<*>,
             qualifier: Qualifier? = null,
             parameters: ParametersDefinition? = null
-    ): T = mainOrBlock { _scopeRegistry.rootScope.get(clazz, qualifier, it, parameters) }
+    ): T = mainOrBlock { _scopeRegistry.rootScope.get(clazz, qualifier, parameters) }
 
 
     /**
@@ -166,7 +165,7 @@ class Koin {
      * @return instance of type S
      */
     inline fun <reified S, reified P> bind(noinline parameters: ParametersDefinition? = null): S =
-            mainOrBlock { _scopeRegistry.rootScope.bind<S, P>(parameters, it) }
+            mainOrBlock { _scopeRegistry.rootScope.bind<S, P>(parameters) }
 
     /**
      * Get instance of primary type P and secondary type S
@@ -178,7 +177,7 @@ class Koin {
             primaryType: KClass<*>,
             secondaryType: KClass<*>,
             parameters: ParametersDefinition? = null
-    ): S = mainOrBlock { _scopeRegistry.rootScope.bind(primaryType, secondaryType, parameters, it) }
+    ): S = mainOrBlock { _scopeRegistry.rootScope.bind(primaryType, secondaryType, parameters) }
 
     internal fun createEagerInstances() {
         createContextIfNeeded()
@@ -196,9 +195,9 @@ class Koin {
      * @param scopeId
      * @param scopeDefinitionName
      */
-    fun createScope(scopeId: ScopeID, qualifier: Qualifier, callerThreadContext: CallerThreadContext? = null): Scope = mainOrBlock(callerThreadContext) { threadContext ->
+    fun createScope(scopeId: ScopeID, qualifier: Qualifier): Scope = mainOrBlock {
         if (_logger.isAt(Level.DEBUG)) {
-            _logger.debug("!- create scope - id:'$scopeId' q:$qualifier callerThread:$threadContext")
+            _logger.debug("!- create scope - id:'$scopeId' q:$qualifier")
         }
         _scopeRegistry.createScope(scopeId, qualifier)
     }
@@ -208,8 +207,8 @@ class Koin {
      * @param scopeId
      * @param qualifier
      */
-    fun getOrCreateScope(scopeId: ScopeID, qualifier: Qualifier): Scope = mainOrBlock {callerThreadContext ->
-        _scopeRegistry.getScopeOrNull(scopeId) ?: createScope(scopeId, qualifier, callerThreadContext)
+    fun getOrCreateScope(scopeId: ScopeID, qualifier: Qualifier): Scope = mainOrBlock {
+        _scopeRegistry.getScopeOrNull(scopeId) ?: createScope(scopeId, qualifier)
     }
 
     /**

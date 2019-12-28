@@ -15,6 +15,5 @@ import org.koin.core.state.CallerThreadContext
 fun <T> Scope.get(
         clazz: Class<*>,
         qualifier: Qualifier? = null,
-        callerThreadContext: CallerThreadContext? = null,
         parameters: ParametersDefinition? = null
-): T = get(clazz.kotlin, qualifier, callerThreadContext, parameters)
+): T = get(clazz.kotlin, qualifier, parameters)

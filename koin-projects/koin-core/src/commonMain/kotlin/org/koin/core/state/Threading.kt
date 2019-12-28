@@ -16,14 +16,44 @@ internal fun assertMainThread() {
 }
 
 enum class CallerThreadContext {
-    Main, Other
+    Main, Other, None
 }
 
-fun <R> mainOrBlock(context: CallerThreadContext? = null, block: (CallerThreadContext) -> R): R {
-    return if (platformThreading.isMainThread) {
-        block(context ?: CallerThreadContext.Main)
+internal var currentCallerThreadContext: CallerThreadContext = CallerThreadContext.None
+internal fun updateCallerThreadContext(): Boolean {
+    return if (currentCallerThreadContext == CallerThreadContext.None) {
+        currentCallerThreadContext = if (platformThreading.isMainThread) {
+            CallerThreadContext.Main
+        } else {
+            CallerThreadContext.Other
+        }
+        true
     } else {
-        platformThreading.runOnMain { block(CallerThreadContext.Other) }
+        false
+    }
+}
+
+internal fun clearCallerThreadContext() {
+    currentCallerThreadContext = CallerThreadContext.None
+}
+
+fun <R> mainOrBlock(block: () -> R): R {
+    return if (platformThreading.isMainThread) {
+        callBlock(block)
+    } else {
+        platformThreading.runOnMain {
+            callBlock(block)
+        }
+    }
+}
+
+private fun <R> callBlock(block: () -> R): R {
+    val updatedContext = updateCallerThreadContext()
+    return try {
+        block()
+    } finally {
+        if (updatedContext)
+            clearCallerThreadContext()
     }
 }
 

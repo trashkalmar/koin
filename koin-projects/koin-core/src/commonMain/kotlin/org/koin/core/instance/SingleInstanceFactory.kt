@@ -19,6 +19,8 @@ import org.koin.core.Koin
 import org.koin.core.definition.BeanDefinition
 import org.koin.core.definition.ThreadScope
 import org.koin.core.state.CallerThreadContext
+import org.koin.core.state.assertMainThread
+import org.koin.core.state.currentCallerThreadContext
 
 /**
  * Single instance holder
@@ -41,12 +43,18 @@ class SingleInstanceFactory<T>(koin: Koin, beanDefinition: BeanDefinition<T>) :
     } else value ?: error("Single instance created couldn't return value")
 
     @Suppress("UNCHECKED_CAST")
-    override fun get(context: InstanceContext, callerThreadContext: CallerThreadContext): T {
+    override fun get(context: InstanceContext): T {
+        assertMainThread()
+        val threadContext = currentCallerThreadContext
+
+        if(currentCallerThreadContext == CallerThreadContext.None)
+            throw IllegalStateException("Thread context not set")
+
         if (!isCreated()) {
             value = create(context)
         }
 
-        if(callerThreadContext != CallerThreadContext.Main && beanDefinition.threadScope == ThreadScope.Main){
+        if(threadContext != CallerThreadContext.Main && beanDefinition.threadScope == ThreadScope.Main){
             error("Cannot access from main thread")
         }
 

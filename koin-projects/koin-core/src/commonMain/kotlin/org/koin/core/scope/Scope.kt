@@ -69,7 +69,7 @@ data class Scope(
             qualifier: Qualifier? = null,
             noinline parameters: ParametersDefinition? = null
     ): Lazy<T> =
-            lazy(LazyThreadSafetyMode.NONE) { get<T>(qualifier, null, parameters) }
+            lazy(LazyThreadSafetyMode.NONE) { get<T>(qualifier, parameters) }
 
     /**
      * Lazy inject a Koin instance if available
@@ -84,7 +84,7 @@ data class Scope(
             qualifier: Qualifier? = null,
             noinline parameters: ParametersDefinition? = null
     ): Lazy<T?> =
-            lazy(LazyThreadSafetyMode.NONE) { getOrNull<T>(qualifier, null, parameters) }
+            lazy(LazyThreadSafetyMode.NONE) { getOrNull<T>(qualifier, parameters) }
 
     /**
      * Get a Koin instance
@@ -95,10 +95,9 @@ data class Scope(
     @JvmOverloads
     inline fun <reified T> get(
             qualifier: Qualifier? = null,
-            callerThreadContext: CallerThreadContext? = null,
             noinline parameters: ParametersDefinition? = null
     ): T {
-        return get(T::class, qualifier, callerThreadContext, parameters)
+        return get(T::class, qualifier, parameters)
     }
 
     /**
@@ -112,10 +111,9 @@ data class Scope(
     @JvmOverloads
     inline fun <reified T> getOrNull(
             qualifier: Qualifier? = null,
-            callerThreadContext: CallerThreadContext? = null,
             noinline parameters: ParametersDefinition? = null
     ): T? {
-        return getOrNull(T::class, qualifier, callerThreadContext, parameters)
+        return getOrNull(T::class, qualifier, parameters)
     }
 
     /**
@@ -130,11 +128,10 @@ data class Scope(
     fun <T> getOrNull(
             clazz: KClass<*>,
             qualifier: Qualifier? = null,
-            callerThreadContext: CallerThreadContext? = null,
             parameters: ParametersDefinition? = null
     ): T? {
         return try {
-            get(clazz, qualifier, callerThreadContext, parameters)
+            get(clazz, qualifier, parameters)
         } catch (e: Exception) {
             _koin._logger.error("Can't get instance for ${clazz.getFullName()}")
             null
@@ -152,33 +149,31 @@ data class Scope(
     fun <T> get(
             clazz: KClass<*>,
             qualifier: Qualifier? = null,
-            callerThreadContext: CallerThreadContext? = null,
             parameters: ParametersDefinition? = null
     ): T {
         return if (_koin._logger.isAt(Level.DEBUG)) {
             _koin._logger.debug("+- get '${clazz.getFullName()}' with qualifier '$qualifier'")
             val (instance: T, duration: Double) = measureDurationForResult {
-                resolveInstance<T>(qualifier, clazz, parameters, callerThreadContext)
+                resolveInstance<T>(qualifier, clazz, parameters)
             }
             _koin._logger.debug("+- got '${clazz.getFullName()}' in $duration ms")
             return instance
         } else {
-            resolveInstance(qualifier, clazz, parameters, callerThreadContext)
+            resolveInstance(qualifier, clazz, parameters)
         }
     }
 
     private fun <T> resolveInstance(
             qualifier: Qualifier?,
             clazz: KClass<*>,
-            parameters: ParametersDefinition?,
-            callerThreadContext: CallerThreadContext?
+            parameters: ParametersDefinition?
     ): T {
         if (scopeState.value._closed) {
             throw ClosedScopeException("Scope '$id' is closed")
         }
         //TODO Resolve in Root or link
         val indexKey = indexKey(clazz, qualifier)
-        return mainOrBlock(callerThreadContext) {callerThreadContext -> scopeState.value._instanceRegistry.resolveInstance(indexKey, parameters, callerThreadContext)
+        return mainOrBlock { scopeState.value._instanceRegistry.resolveInstance(indexKey, parameters)
                 ?: findInOtherScope<T>(clazz, qualifier, parameters)
                 ?: throwDefinitionNotFound(qualifier, clazz) }
     }
@@ -192,13 +187,11 @@ data class Scope(
             scope.getOrNull<T>(
                     clazz,
                     qualifier,
-                    null,
                     parameters
             ) != null
         }?.get(
                 clazz,
                 qualifier,
-                null,
                 parameters
         )
     }
@@ -269,7 +262,7 @@ data class Scope(
      *
      * @return list of instances of type T
      */
-    fun <T : Any> getAll(clazz: KClass<*>): List<T> = mainOrBlock { scopeState.value._instanceRegistry.getAll(clazz, it) }
+    fun <T : Any> getAll(clazz: KClass<*>): List<T> = mainOrBlock { scopeState.value._instanceRegistry.getAll(clazz) }
 
     /**
      * Get instance of primary type P and secondary type S
@@ -277,10 +270,10 @@ data class Scope(
      *
      * @return instance of type S
      */
-    inline fun <reified S, reified P> bind(noinline parameters: ParametersDefinition? = null, callerThreadContext: CallerThreadContext? = null): S = mainOrBlock(callerThreadContext){callerThreadContext->
+    inline fun <reified S, reified P> bind(noinline parameters: ParametersDefinition? = null): S = mainOrBlock {
         val secondaryType = S::class
         val primaryType = P::class
-        bind(primaryType, secondaryType, parameters, callerThreadContext)
+        bind(primaryType, secondaryType, parameters)
     }
 
     /**
@@ -292,10 +285,9 @@ data class Scope(
     fun <S> bind(
             primaryType: KClass<*>,
             secondaryType: KClass<*>,
-            parameters: ParametersDefinition?,
-            callerThreadContext: CallerThreadContext? = null
-    ): S = mainOrBlock(callerThreadContext){callerThreadContext ->
-        scopeState.value._instanceRegistry.bind(primaryType, secondaryType, parameters, callerThreadContext)
+            parameters: ParametersDefinition?
+    ): S = mainOrBlock {
+        scopeState.value._instanceRegistry.bind(primaryType, secondaryType, parameters)
                 ?: throw NoBeanDefFoundException("No definition found to bind class:'${primaryType.getFullName()}' & secondary type:'${secondaryType.getFullName()}'. Check your definitions!")
     }
 

@@ -1,9 +1,6 @@
 package org.koin.dsl
 
-import kotlinx.coroutines.GlobalScope
 import org.koin.Simple
-import org.koin.core.KoinState
-import org.koin.core.context.GlobalContext
 import org.koin.core.definition.Definitions
 import org.koin.core.definition.Kind
 import org.koin.core.definition.Options
@@ -11,7 +8,7 @@ import org.koin.core.definition.ThreadScope
 import org.koin.core.instance.InstanceContext
 import org.koin.core.parameter.emptyParametersHolder
 import org.koin.core.qualifier.named
-import org.koin.core.state.CallerThreadContext
+import org.koin.core.state.mainOrBlock
 import org.koin.core.state.value
 import org.koin.test.getBeanDefinition
 import org.koin.test.getInstanceFactory
@@ -121,13 +118,14 @@ class BeanDefinitionTest {
         }
 
         app.getBeanDefinition(Simple.ComponentA::class) ?: error("no definition found")
-        val instance = app.getInstanceFactory(Simple.ComponentA::class)!!.get(
-            InstanceContext(
-                app.koin,
-                rootScope,
-                _parameters = { emptyParametersHolder() }),
-                CallerThreadContext.Main
-        )
+        val instance = mainOrBlock {
+            app.getInstanceFactory(Simple.ComponentA::class)!!.get(
+                    InstanceContext(
+                            app.koin,
+                            rootScope,
+                            _parameters = { emptyParametersHolder() })
+            )
+        }
         assertEquals(instance, app.koin.get<Simple.ComponentA>())
     }
 }
