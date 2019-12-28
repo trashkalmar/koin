@@ -96,7 +96,6 @@ class InstanceRegistry(val _koin: Koin, val _scope: Scope) {
     }
 
     internal fun createEagerInstances() = mainOrBlock {
-        assertMainThread()
         instances.values.filterIsInstance<SingleInstanceFactory<*>>()
                 .filter { instance -> instance.beanDefinition.options.isCreatedAtStart }
                 .forEach { instance ->

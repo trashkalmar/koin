@@ -1,10 +1,11 @@
 package org.koin.core
 
-import platform.Foundation.NSThread
+import org.koin.core.logger.KOIN_TAG
+import org.koin.core.logger.Level
+import org.koin.core.logger.MESSAGE
 import kotlin.native.concurrent.ensureNeverFrozen
 import kotlin.native.concurrent.freeze
 import kotlin.reflect.KClass
-import kotlin.system.getTimeNanos
 
 actual object KoinMultiPlatform {
     actual fun className(kClass: KClass<*>): String {
@@ -13,6 +14,12 @@ actual object KoinMultiPlatform {
 
     actual fun printStackTrace(throwable: Throwable) {
         throwable.printStackTrace()
+    }
+
+    actual fun stackTrace(): List<String> = Exception().getStackTrace().toList()
+
+    actual fun printLog(level: Level, msg: MESSAGE) {
+        println("[$level] $KOIN_TAG $msg")
     }
 }
 

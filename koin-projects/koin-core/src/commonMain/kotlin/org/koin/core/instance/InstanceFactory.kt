@@ -18,6 +18,7 @@
 package org.koin.core.instance
 
 import org.koin.core.Koin
+import org.koin.core.KoinMultiPlatform
 import org.koin.core.definition.BeanDefinition
 import org.koin.core.ensureNeverFrozen
 import org.koin.core.error.InstanceCreationException
@@ -57,9 +58,7 @@ abstract class InstanceFactory<T>(private val _koin: Koin, val beanDefinition: B
                 parameters
             )
         } catch (e: Exception) {
-            val stack =
-                e.toString() /*+ ERROR_SEPARATOR + e.stackTrace.takeWhile { !it.className.contains("sun.reflect") } TODO
-                    .joinToString(ERROR_SEPARATOR)*/
+            val stack = ERROR_SEPARATOR + KoinMultiPlatform.stackTrace().joinToString(ERROR_SEPARATOR)
             _koin._logger.error("Instance creation error : could not create instance for $beanDefinition: $stack")
             throw InstanceCreationException("Could not create instance for $beanDefinition", e)
         }

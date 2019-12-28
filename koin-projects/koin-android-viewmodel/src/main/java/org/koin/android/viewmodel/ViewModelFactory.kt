@@ -10,7 +10,7 @@ import org.koin.core.scope.Scope
 fun <T : ViewModel> Scope.defaultViewModelFactory(parameters: ViewModelParameter<T>): ViewModelProvider.Factory {
     return object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return get(clazz = parameters.clazz, qualifier = parameters.qualifier, parameters = parameters.parameters)
+            return get(parameters.clazz, parameters.qualifier, parameters.parameters)
         }
     }
 }

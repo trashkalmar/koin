@@ -15,7 +15,7 @@
  */
 package org.koin.core.scope
 
-import org.koin.core.*
+import org.koin.core.Koin
 import org.koin.core.definition.ThreadScope
 import org.koin.core.definition.indexKey
 import org.koin.core.error.ClosedScopeException
@@ -25,9 +25,9 @@ import org.koin.core.logger.Level
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.registry.InstanceRegistry
-import org.koin.core.state.*
 import org.koin.core.state.MainIsolatedState
 import org.koin.core.state.getFullName
+import org.koin.core.state.mainOrBlock
 import org.koin.core.state.value
 import org.koin.core.time.measureDurationForResult
 import kotlin.jvm.JvmOverloads
@@ -69,7 +69,7 @@ data class Scope(
             qualifier: Qualifier? = null,
             noinline parameters: ParametersDefinition? = null
     ): Lazy<T> =
-            lazy(LazyThreadSafetyMode.NONE) { get<T>(qualifier, parameters) }
+            lazy { get<T>(qualifier, parameters) }
 
     /**
      * Lazy inject a Koin instance if available
@@ -84,7 +84,7 @@ data class Scope(
             qualifier: Qualifier? = null,
             noinline parameters: ParametersDefinition? = null
     ): Lazy<T?> =
-            lazy(LazyThreadSafetyMode.NONE) { getOrNull<T>(qualifier, parameters) }
+            lazy { getOrNull<T>(qualifier, parameters) }
 
     /**
      * Get a Koin instance
@@ -167,15 +167,15 @@ data class Scope(
             qualifier: Qualifier?,
             clazz: KClass<*>,
             parameters: ParametersDefinition?
-    ): T {
+    ): T = mainOrBlock {
         if (scopeState.value._closed) {
             throw ClosedScopeException("Scope '$id' is closed")
         }
         //TODO Resolve in Root or link
         val indexKey = indexKey(clazz, qualifier)
-        return mainOrBlock { scopeState.value._instanceRegistry.resolveInstance(indexKey, parameters)
+        scopeState.value._instanceRegistry.resolveInstance(indexKey, parameters)
                 ?: findInOtherScope<T>(clazz, qualifier, parameters)
-                ?: throwDefinitionNotFound(qualifier, clazz) }
+                ?: throwDefinitionNotFound(qualifier, clazz)
     }
 
     private fun <T> findInOtherScope(

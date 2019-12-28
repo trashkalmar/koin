@@ -15,6 +15,8 @@
  */
 package org.koin.core.logger
 
+import org.koin.core.KoinMultiPlatform
+
 /**
  * Logger that print on system.out
  * @author - Arnaud GIULIANI
@@ -23,7 +25,7 @@ class PrintLogger(level: Level = Level.INFO) : Logger(level) {
 
     override fun log(level: Level, msg: MESSAGE) {
         if (this.level <= level) {
-            println("[$level] $KOIN_TAG $msg")
+            KoinMultiPlatform.printLog(level, msg)
         }
     }
 }
