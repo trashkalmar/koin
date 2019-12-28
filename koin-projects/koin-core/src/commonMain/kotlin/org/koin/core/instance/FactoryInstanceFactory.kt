@@ -17,6 +17,7 @@ package org.koin.core.instance
 
 import org.koin.core.Koin
 import org.koin.core.definition.BeanDefinition
+import org.koin.core.state.CallerThreadContext
 
 /**
  * Factory Instance Holder
@@ -32,7 +33,7 @@ class FactoryInstanceFactory<T>(koin: Koin, beanDefinition: BeanDefinition<T>) :
         beanDefinition.callbacks.onClose?.invoke(null)
     }
 
-    override fun get(context: InstanceContext): T {
+    override fun get(context: InstanceContext, callerThreadContext: CallerThreadContext): T {
         return create(context)
     }
 }

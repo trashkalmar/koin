@@ -1,8 +1,5 @@
 package org.koin.core.state
 
-import org.koin.core.isMainThread
-
-
 internal expect class MainIsolatedState<T:Any>(startVal: T) {
     fun _get(): T
 }

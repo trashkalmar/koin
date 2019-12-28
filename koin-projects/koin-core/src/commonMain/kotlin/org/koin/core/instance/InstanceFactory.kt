@@ -23,6 +23,7 @@ import org.koin.core.ensureNeverFrozen
 import org.koin.core.error.InstanceCreationException
 import org.koin.core.logger.Level
 import org.koin.core.parameter.DefinitionParameters
+import org.koin.core.state.CallerThreadContext
 
 /**
  * Koin Instance Holder
@@ -39,7 +40,7 @@ abstract class InstanceFactory<T>(private val _koin: Koin, val beanDefinition: B
      * @param context
      * @return T
      */
-    abstract fun get(context: InstanceContext): T
+    abstract fun get(context: InstanceContext, callerThreadContext: CallerThreadContext): T
 
     /**
      * Create an instance

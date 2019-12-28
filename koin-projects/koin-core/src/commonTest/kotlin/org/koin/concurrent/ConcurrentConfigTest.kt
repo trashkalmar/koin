@@ -4,7 +4,6 @@ import co.touchlab.stately.concurrency.AtomicReference
 import co.touchlab.stately.concurrency.value
 import co.touchlab.testhelp.concurrency.ThreadOperations
 import org.koin.core.freeze
-import org.koin.core.isMainThread
 import org.koin.core.qualifier.named
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
