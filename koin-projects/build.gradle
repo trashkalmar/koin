@@ -28,7 +28,7 @@ allprojects {
       mavenLocal()
     }
 
-    group = 'org.koin'
+    group = 'co.touchlab'
     version = "$koin_version"
 
     // Dokka

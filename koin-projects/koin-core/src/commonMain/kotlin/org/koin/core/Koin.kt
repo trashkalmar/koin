@@ -166,7 +166,7 @@ class Koin {
      * @return instance of type S
      */
     inline fun <reified S, reified P> bind(noinline parameters: ParametersDefinition? = null): S =
-            mainOrBlock { _scopeRegistry.rootScope.bind<S, P>(parameters) }
+            mainOrBlock { _scopeRegistry.rootScope.bind<S, P>(parameters, it) }
 
     /**
      * Get instance of primary type P and secondary type S
@@ -178,7 +178,7 @@ class Koin {
             primaryType: KClass<*>,
             secondaryType: KClass<*>,
             parameters: ParametersDefinition? = null
-    ): S = mainOrBlock { _scopeRegistry.rootScope.bind(primaryType, secondaryType, parameters) }
+    ): S = mainOrBlock { _scopeRegistry.rootScope.bind(primaryType, secondaryType, parameters, it) }
 
     internal fun createEagerInstances() {
         createContextIfNeeded()

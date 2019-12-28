@@ -12,6 +12,8 @@ import org.koin.core.instance.SingleInstanceFactory
 import org.koin.core.logger.Level
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.scope.Scope
+import org.koin.core.state.CallerThreadContext
+import org.koin.core.state.assertMainThread
 import kotlin.reflect.KClass
 
 class InstanceRegistry(val _koin: Koin, val _scope: Scope) {
@@ -81,8 +83,8 @@ class InstanceRegistry(val _koin: Koin, val _scope: Scope) {
     }
 
     @Suppress("UNCHECKED_CAST")
-    internal fun <T> resolveInstance(indexKey: IndexKey, parameters: ParametersDefinition?): T? {
-        return _instances[indexKey]?.get(defaultInstanceContext(parameters)) as? T
+    internal fun <T> resolveInstance(indexKey: IndexKey, parameters: ParametersDefinition?, callerThreadContext: CallerThreadContext): T? {
+        return _instances[indexKey]?.get(defaultInstanceContext(parameters), callerThreadContext) as? T
     }
 
     private fun defaultInstanceContext(parameters: ParametersDefinition?) =
@@ -94,36 +96,39 @@ class InstanceRegistry(val _koin: Koin, val _scope: Scope) {
     }
 
     internal fun createEagerInstances() {
+        assertMainThread()
         instances.values.filterIsInstance<SingleInstanceFactory<*>>()
                 .filter { instance -> instance.beanDefinition.options.isCreatedAtStart }
                 .forEach { instance ->
                     instance.get(
-                            InstanceContext(_koin, _scope)
+                            InstanceContext(_koin, _scope),
+                            CallerThreadContext.Main
                     )
                 }
     }
 
     @Suppress("UNCHECKED_CAST")
-    internal fun <T : Any> getAll(clazz: KClass<*>): List<T> {
+    internal fun <T : Any> getAll(clazz: KClass<*>, callerThreadContext: CallerThreadContext): List<T> {
         val instances = instances.values.toSet()
         val potentialKeys: List<InstanceFactory<*>> =
                 instances.filter { instance -> instance.beanDefinition.hasType(clazz) }
         return potentialKeys.mapNotNull {
-            it.get(defaultInstanceContext(null)) as? T
+            it.get(defaultInstanceContext(null), callerThreadContext) as? T
         }
     }
 
     internal fun <S> bind(
             primaryType: KClass<*>,
             secondaryType: KClass<*>,
-            parameters: ParametersDefinition?
+            parameters: ParametersDefinition?,
+            callerThreadContext: CallerThreadContext
     ): S? {
         return instances.values.firstOrNull { instance ->
             instance.beanDefinition.canBind(
                     primaryType,
                     secondaryType
             )
-        }?.get(defaultInstanceContext(parameters)) as? S
+        }?.get(defaultInstanceContext(parameters), callerThreadContext) as? S
     }
 
     internal fun dropDefinition(definition: BeanDefinition<*>) {

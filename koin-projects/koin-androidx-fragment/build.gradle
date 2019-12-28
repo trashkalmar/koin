@@ -28,4 +28,4 @@ dependencies {
     implementation("androidx.fragment:fragment:$androidx_fragment_version")
 }
 
-apply from: '../gradle/publish-android.gradle'
+apply from: '../gradle/publish-mavenCentral.gradle'

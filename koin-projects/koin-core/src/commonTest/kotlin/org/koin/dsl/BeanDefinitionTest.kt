@@ -11,6 +11,7 @@ import org.koin.core.definition.ThreadScope
 import org.koin.core.instance.InstanceContext
 import org.koin.core.parameter.emptyParametersHolder
 import org.koin.core.qualifier.named
+import org.koin.core.state.CallerThreadContext
 import org.koin.core.state.value
 import org.koin.test.getBeanDefinition
 import org.koin.test.getInstanceFactory
@@ -124,7 +125,8 @@ class BeanDefinitionTest {
             InstanceContext(
                 app.koin,
                 rootScope,
-                _parameters = { emptyParametersHolder() })
+                _parameters = { emptyParametersHolder() }),
+                CallerThreadContext.Main
         )
         assertEquals(instance, app.koin.get<Simple.ComponentA>())
     }

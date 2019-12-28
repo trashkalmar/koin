@@ -178,7 +178,7 @@ data class Scope(
         }
         //TODO Resolve in Root or link
         val indexKey = indexKey(clazz, qualifier)
-        return mainOrBlock(callerThreadContext) { scopeState.value._instanceRegistry.resolveInstance(indexKey, parameters)
+        return mainOrBlock(callerThreadContext) {callerThreadContext -> scopeState.value._instanceRegistry.resolveInstance(indexKey, parameters, callerThreadContext)
                 ?: findInOtherScope<T>(clazz, qualifier, parameters)
                 ?: throwDefinitionNotFound(qualifier, clazz) }
     }
@@ -269,7 +269,7 @@ data class Scope(
      *
      * @return list of instances of type T
      */
-    fun <T : Any> getAll(clazz: KClass<*>): List<T> = scopeState.value._instanceRegistry.getAll(clazz)
+    fun <T : Any> getAll(clazz: KClass<*>): List<T> = mainOrBlock { scopeState.value._instanceRegistry.getAll(clazz, it) }
 
     /**
      * Get instance of primary type P and secondary type S
@@ -277,10 +277,10 @@ data class Scope(
      *
      * @return instance of type S
      */
-    inline fun <reified S, reified P> bind(noinline parameters: ParametersDefinition? = null): S {
+    inline fun <reified S, reified P> bind(noinline parameters: ParametersDefinition? = null, callerThreadContext: CallerThreadContext? = null): S = mainOrBlock(callerThreadContext){callerThreadContext->
         val secondaryType = S::class
         val primaryType = P::class
-        return bind(primaryType, secondaryType, parameters)
+        bind(primaryType, secondaryType, parameters, callerThreadContext)
     }
 
     /**
@@ -292,9 +292,10 @@ data class Scope(
     fun <S> bind(
             primaryType: KClass<*>,
             secondaryType: KClass<*>,
-            parameters: ParametersDefinition?
-    ): S {
-        return scopeState.value._instanceRegistry.bind(primaryType, secondaryType, parameters)
+            parameters: ParametersDefinition?,
+            callerThreadContext: CallerThreadContext? = null
+    ): S = mainOrBlock(callerThreadContext){callerThreadContext ->
+        scopeState.value._instanceRegistry.bind(primaryType, secondaryType, parameters, callerThreadContext)
                 ?: throw NoBeanDefFoundException("No definition found to bind class:'${primaryType.getFullName()}' & secondary type:'${secondaryType.getFullName()}'. Check your definitions!")
     }
 
