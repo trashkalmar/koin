@@ -11,8 +11,11 @@ internal actual val platformThreading: PlatformThreading by lazy {
 
 internal object JvmPlatformThreading : PlatformThreading {
     override fun <R> runOnMain(block: () -> R): R {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw UnsupportedOperationException("Jvm has no way to run something on the main thread")
     }
+
+    //No way to run something on the main thread, so we can't run on background threads.
+    override val multithreadingCapable: Boolean = false
 
     //TODO: May want to review this but without Android this
     private val firstThread = Thread.currentThread()

@@ -1,16 +1,6 @@
 package org.koin.core
 
-import kotlinx.coroutines.*
-import kotlin.test.*
-import kotlin.test.Test
-import org.koin.Simple
-import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
-import org.koin.dsl.module
-import org.koin.test.getInstanceFactory
-import org.koin.test.runBlocking
-import kotlin.random.Random
-
+/* Reenable once mt coroutines are stable
 class CoroutinesTest {
 
     @Test
@@ -56,4 +46,4 @@ class CoroutinesTest {
         println("thread sleep  $timer")
         delay(timer)
     }
-}
+}*/

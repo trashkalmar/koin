@@ -19,7 +19,9 @@ import org.koin.core.parameter.DefinitionParameters
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.scope.Scope
 import org.koin.core.scope.ScopeDefinition
+import org.koin.core.state.PlatformThreading
 import org.koin.core.state.getFullName
+import org.koin.core.state.platformThreading
 import kotlin.reflect.KClass
 
 /**
@@ -41,8 +43,15 @@ data class BeanDefinition<T>(
         val options: Options = Options(),
         val threadScope: ThreadScope = ThreadScope.Main,
         val properties: Properties = Properties(),
-        val callbacks: Callbacks<T> = Callbacks()
+        val callbacks: Callbacks<T> = Callbacks(),
+        val pt: PlatformThreading = platformThreading
 ) {
+
+    init {
+        if(threadScope != ThreadScope.Main && !pt.multithreadingCapable){
+            throw IllegalArgumentException("Background threads not supported")
+        }
+    }
 
     override fun toString(): String {
         val defKind = kind.toString()

@@ -141,7 +141,7 @@ class AdditionalTypeBindingTest {
             printLogger()
             modules(
                     module {
-                        single(threadScope = ThreadScope.Shared) { Simple.Component1() } binds arrayOf(
+                        single { Simple.Component1() } binds arrayOf(
                                 Simple.ComponentInterface1::class,
                                 Simple.ComponentInterface2::class
                         )

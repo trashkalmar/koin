@@ -29,6 +29,8 @@ internal object NativePlatformThreading: PlatformThreading{
         return result
     }
 
+    override val multithreadingCapable: Boolean = true
+
     override val isMainThread: Boolean
         get() = NSThread.isMainThread
 }

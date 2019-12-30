@@ -6,6 +6,7 @@ import kotlin.reflect.KClass
 internal expect val platformThreading:PlatformThreading
 
 interface PlatformThreading {
+    val multithreadingCapable:Boolean
     val isMainThread: Boolean
     fun <R> runOnMain(block: () -> R): R
 }

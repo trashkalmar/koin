@@ -22,6 +22,8 @@ class AndroidPlatformThreading : PlatformThreading{
         return atomResult.get()
     }
 
+    override val multithreadingCapable: Boolean = true
+
     override val isMainThread: Boolean
         get() = Looper.myLooper() === Looper.getMainLooper()
 }
