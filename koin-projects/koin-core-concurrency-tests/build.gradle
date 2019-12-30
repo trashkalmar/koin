@@ -1,0 +1,77 @@
+apply plugin: 'org.jetbrains.kotlin.multiplatform'
+
+archivesBaseName = 'koin-core'
+description = 'Koin - simple dependency injection for Kotlin - ' + archivesBaseName
+def ideaActive = System.getProperty('idea.active') == 'true'
+
+kotlin {
+  jvm()
+// Uncomment and refresh gradle for Intellij to "see" native libraries
+//    macosX64("nativeCommon")
+  iosX64("native"){
+    binaries {
+      framework()
+    }
+    binaries.getFramework("DEBUG")
+        .freeCompilerArgs.add("-tr")
+  }
+  /*if(!ideaActive) {
+    iosArm32()
+    iosArm64()
+    iosX64()
+  }*/
+
+  sourceSets {
+    commonMain {
+      dependencies {
+        api kotlin("stdlib-common")
+        api project(":koin-core")
+      }
+    }
+
+    commonTest {
+      dependencies {
+        implementation kotlin("test-common")
+        implementation kotlin("test-annotations-common")
+      }
+    }
+
+    jvmMain {
+      dependencies {
+        api kotlin("stdlib-jdk8")
+      }
+    }
+
+    jvmTest {
+      dependencies {
+        implementation kotlin("test-junit")
+        implementation "org.mockito:mockito-inline:$mockito_version"
+      }
+    }
+
+    nativeMain {
+      dependencies {
+
+      }
+    }
+
+    nativeTest {
+      dependencies {
+
+      }
+    }
+
+    /*if(!ideaActive) {
+      configure([
+          targets.iosX64,
+          targets.iosArm32,
+          targets.iosArm64
+      ]) {
+        compilations.main.source(sourceSets.nativeMain)
+        compilations.test.source(sourceSets.nativeTest)
+      }
+    }*/
+  }
+}
+
+apply from: '../gradle/publish-mpp-mavenCentral.gradle'

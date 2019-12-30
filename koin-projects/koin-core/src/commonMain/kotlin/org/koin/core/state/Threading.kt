@@ -20,9 +20,9 @@ enum class CallerThreadContext {
 }
 
 internal var currentCallerThreadContext: CallerThreadContext = CallerThreadContext.None
-internal fun updateCallerThreadContext(): Boolean {
+internal fun updateCallerThreadContext(fromMainThread:Boolean): Boolean {
     return if (currentCallerThreadContext == CallerThreadContext.None) {
-        currentCallerThreadContext = if (platformThreading.isMainThread) {
+        currentCallerThreadContext = if (fromMainThread) {
             CallerThreadContext.Main
         } else {
             CallerThreadContext.Other
@@ -39,16 +39,16 @@ internal fun clearCallerThreadContext() {
 
 fun <R> mainOrBlock(block: () -> R): R {
     return if (platformThreading.isMainThread) {
-        callBlock(block)
+        callBlock(block, true)
     } else {
         platformThreading.runOnMain {
-            callBlock(block)
+            callBlock(block, false)
         }
     }
 }
 
-private fun <R> callBlock(block: () -> R): R {
-    val updatedContext = updateCallerThreadContext()
+private fun <R> callBlock(block: () -> R, fromMainThread:Boolean): R {
+    val updatedContext = updateCallerThreadContext(fromMainThread)
     return try {
         block()
     } finally {
