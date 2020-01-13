@@ -12,7 +12,6 @@ import org.koin.core.instance.SingleInstanceFactory
 import org.koin.core.logger.Level
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.scope.Scope
-import org.koin.core.state.assertMainThread
 import org.koin.core.state.mainOrBlock
 import kotlin.reflect.KClass
 

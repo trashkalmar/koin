@@ -1,18 +1,25 @@
 ![logo](./img/koin_2.0.jpg)
 
-## What is ~KOIN~ KHAN?
+## What is KOIN-MP?
 
 KOIN is "A pragmatic lightweight dependency injection framework for Kotlin developers."
 
-KHAN is a fork of KOIN designed for use in a multiplatform environment. It differs from KOIN and other multiplatform DI options in that it is explicit about what state is mutable and from what threads you can perform operations.
+KOIN-MP is a fork of KOIN designed for use in a multiplatform environment. It differs from KOIN and other multiplatform DI options in that it is explicit about what state is mutable and from what threads you can perform operations.
 
 Primarily the goal is to create a DI framework that works well within Kotlin/Native's state and concurrency model, but also acts the same when being used from the JVM. Native's state model is an attempt to ensure safe mutability. If you are able to follow it's rules in the JVM, that's probably a good thing.
 
-KHAN is experimental. As we're rethinking architecture with Native, we're rethinking state and mutability. Details may change over time. Also, the hope is that ideas from KHAN are incorporated back into KOIN and we can have just "KOIN", but it would take a lot of discussion to try to build this into KOIN directly, so we're starting with a fork.
+KOIN-MP is experimental. As we're rethinking architecture with Native, we're rethinking state and mutability. Details may change over time. Also, the hope is that ideas from KOIN-MP are incorporated back into KOIN and we can have just "KOIN", but I'd rather experiment first then discuss, so we're starting with a fork.
 
 ## What are the rules?
 
-All mutable state in KHAN is restricted to the main thread. In general, DI is done on the main thread anyway. By default, if you attempt to get or inject from a thread that isn't the main thread, you'll get an exception. You can override this behavior, but you must do so at config time, and do so explicitly by way of a `ThreadScope` parameter.
+All mutable state in KOIN-MP is restricted to the main thread internally.
+
+1. **All module config needs to happen on the main thread**.
+2. **All inject/get operations happen in the main thread *by default***. 
+
+If you configure your Koin instance in the main thread, and inject in the main thread, then KOIN-MP is syntactically the same as KOIN.
+
+You can allow inject/get from other threads, but you must configure your components to specially allow that with the `ThreadScope` parameter.
 
 ```kotlin
 single(threadScope = ThreadScope.Shared) { Simple.Component1() }
@@ -20,9 +27,25 @@ single(threadScope = ThreadScope.Shared) { Simple.Component1() }
 
 This will allow you to inject the single from a background thread.
 
-All config is done in the main thread.
+Trying to configure or inject/get from a different thread will throw an exception, except for the `ThreadScope` option above. In that case, it will call to the main thread to run the inject/get. If your code does a lot of getting from background threads, this fork may not be for you.
 
-One of the goals is to remain source compatible with KOIN, so if you only interact with KHAN on the main thread, you shouldn't need to change anything.
+## Why those restrictions?
+
+KN's state rules formalize thread confinement as a way of ensuring safe concurrency. In short, that means all mutable state is confined to a single thread. To a native mobile developer, this is intuitive, because both Android and iOS have a concept of "main thread". You're only allowed to change the UI from the main thread. As a consequence, on native mobile, the vast majority of DI happens in the main thread.
+
+Koin internally has a few moving parts that will change over time. That state needs to be mutable but safe concurrent. Isolating all access to the main thread makes the state concurrency safe, and in the primary use case (main thread), very performant, because the main thread has immediate access, and there's no synchronization or locks.
+
+Enforcing the same rules on all platforms makes Koin uniform, rather than having different platforms behave differently. KN's concurrency is a good idea, and those best practices are often self imposed on the jvm. We're applying the same principle here.
+
+On native, one of the primary benefits is you don't have to freeze `single` instances. You *can*, but you don't *need* to. In earlier Koin multiplatform versions, all state was internally frozen. We are moving away from freezing everything and being intentional about our state. See [my talk](https://youtu.be/oxQ6e1VeH4M?t=1078).
+
+## Bad News
+
+Only Android and iOS have a formal "main thread". Linux, windows, raw JVM, etc have no default main thread, so there's no way to "run something on the main thread". As a result, on those platforms, you can only access Koin on the first thread you touch it with, and cannot inject/get from another thread, even if you configure it.
+
+For server use cases, the main thread restriction is problematic at best. There are generally thread pools servicing many requests. We'll want the JVM-only version of Koin to be more thread-agnostic, but for today I've shelved that to focus on testing the native mobile version.
+
+Publications need to be fixed. The `aar` files aren't pushing properly. That's a pretty short term problem, though.
 
 ## Original KOIN Docs
 
