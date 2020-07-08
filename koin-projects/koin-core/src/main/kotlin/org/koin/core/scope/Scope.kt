@@ -31,7 +31,8 @@ import kotlin.reflect.KClass
 data class Scope(
     val id: ScopeID,
     val _scopeDefinition: ScopeDefinition,
-    val _koin: Koin
+    val _koin: Koin,
+    val _source: Any? = null
 ) {
     val _linkedScope: ArrayList<Scope> = arrayListOf()
     val _instanceRegistry = InstanceRegistry(_koin, this)
@@ -44,6 +45,9 @@ data class Scope(
         _instanceRegistry.create(_scopeDefinition.definitions)
         _linkedScope.addAll(links)
     }
+
+    inline fun <reified T : Any> getSource(): T = _source as? T ?: error(
+        "Can't use Scope source for ${T::class.getFullName()} - source is:$_source")
 
     /**
      * Add parent Scopes to allow instance resolution
@@ -196,6 +200,7 @@ data class Scope(
         return get(kClass, qualifier, parameters)
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun <T> resolveInstance(
         qualifier: Qualifier?,
         clazz: KClass<*>,
@@ -207,8 +212,13 @@ data class Scope(
         //TODO Resolve in Root or link
         val indexKey = indexKey(clazz, qualifier)
         return _instanceRegistry.resolveInstance(indexKey, parameters)
-            ?: findInOtherScope<T>(clazz, qualifier, parameters)
+            ?: findInOtherScope<T>(clazz, qualifier, parameters) ?: getFromSource(clazz)
             ?: throwDefinitionNotFound(qualifier, clazz)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> getFromSource(clazz: KClass<*>): T? {
+        return if (clazz.isInstance(_source)) _source as? T else null
     }
 
     private fun <T> findInOtherScope(
@@ -216,17 +226,16 @@ data class Scope(
         qualifier: Qualifier?,
         parameters: ParametersDefinition?
     ): T? {
-        return _linkedScope.firstOrNull { scope ->
-            scope.getOrNull<T>(
-                clazz,
-                qualifier,
-                parameters
-            ) != null
-        }?.get(
-            clazz,
-            qualifier,
-            parameters
-        )
+        var instance: T? = null
+        for (scope in _linkedScope) {
+            instance = scope.getOrNull<T>(
+                    clazz,
+                    qualifier,
+                    parameters
+            )
+            if (instance != null) break
+        }
+        return instance
     }
 
     private fun throwDefinitionNotFound(
@@ -254,7 +263,7 @@ data class Scope(
      * @param secondaryTypes List of secondary bound types
      * @param override Allows to override a previous declaration of the same type (default to false).
      */
-    fun <T : Any> declare(
+    inline fun <reified T : Any> declare(
         instance: T,
         qualifier: Qualifier? = null,
         secondaryTypes: List<KClass<*>>? = null,
@@ -330,19 +339,19 @@ data class Scope(
      * @param key
      * @param defaultValue
      */
-    fun <T> getProperty(key: String, defaultValue: T): T = _koin.getProperty(key, defaultValue)
+    fun getProperty(key: String, defaultValue: String): String = _koin.getProperty(key, defaultValue)
 
     /**
      * Retrieve a property
      * @param key
      */
-    fun <T> getPropertyOrNull(key: String): T? = _koin.getProperty(key)
+    fun getPropertyOrNull(key: String): String? = _koin.getProperty(key)
 
     /**
      * Retrieve a property
      * @param key
      */
-    fun <T> getProperty(key: String): T = _koin.getProperty(key)
+    fun getProperty(key: String): String = _koin.getProperty(key)
         ?: throw MissingPropertyException("Property '$key' not found")
 
     /**

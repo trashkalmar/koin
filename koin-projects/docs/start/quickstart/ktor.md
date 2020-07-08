@@ -1,5 +1,5 @@
 
-# Getting Started with JUnit Tests {docsify-ignore-all}
+# Getting Started with Ktor
 
 > Ktor is a framework for building asynchronous servers and clients in connected systems using the powerful Kotlin programming language. We will use Ktor here, to build a simple web application.
 
@@ -34,7 +34,7 @@ repositories {
 }
 dependencies {
     // Koin for Kotlin apps
-    compile 'org.koin:koin-ktor:$koin_version'
+    compile "org.koin:koin-ktor:$koin_version"
 }
 ```
 
@@ -147,7 +147,7 @@ fun main(args: Array<String>) {
 }
 ```
 
-That's it! You're ready to go. Chech the `http://localhost:8080/hello` url!
+That's it! You're ready to go. Check the `http://localhost:8080/hello` url!
 
 ## What's Next?
 

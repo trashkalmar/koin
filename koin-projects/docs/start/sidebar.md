@@ -1,6 +1,6 @@
 - [Intro](introduction)
 - [Setup](setup/index)
-- [Upgrade from 1.0.x](setup/upgrade)
+- [Koin MP - Alpha](setup/koin_mp)
 - **Koin in 5 minutes**
 - [Kotlin](quickstart/kotlin)
 - [Android](quickstart/android)
@@ -17,7 +17,7 @@
 - [Koin for Android](getting-started/koin-for-android)
 - [Koin for Ktor](getting-started/koin-for-ktor)
 - **Links**
-- [Changelog](_https://github.com/InsertKoinIO/koin/blob/master/CHANGELOG.md)
+- [Changelog](https://github.com/InsertKoinIO/koin/blob/master/CHANGELOG.md)
 - [WebSite](https://insert-koin.io/)
 - [Reference Documentation](https://doc.insert-koin.io/)
 - [![Github](https://icongram.jgog.in/simple/github.svg?color=808080&size=16)Github](https://github.com/InsertKoinIO/koin)

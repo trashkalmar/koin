@@ -43,7 +43,7 @@ module {
 
 ## Android Components as KoinComponents
 
-`Activity`, `Fragment` & `Service` are extendend by Koin to be considered as `KoinComponents` out of the box:
+`Activity`, `Fragment` & `Service` are extended by Koin to be considered as `KoinComponents` out of the box:
 
 ```kotlin
 class MyActivity : AppCompatActivity(){
@@ -115,7 +115,7 @@ Koin brings special features to manage ViewModel:
 Let's declare a ViewModel in a module:
 
 ```kotlin
-val myModule : Module = applicationContext {
+val myModule : Module = module {
     
     // ViewModel instance of MyViewModel
     // get() will resolve Repository instance

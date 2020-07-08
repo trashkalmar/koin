@@ -1,40 +1,33 @@
 ![logo](./img/koin_2.0.jpg)
 
-## What is KOIN?
- 
+## What is KOIN? - [https://insert-koin.io](https://insert-koin.io)
+
 A pragmatic lightweight dependency injection framework for Kotlin developers.
 
 Written in pure Kotlin, using functional resolution only: no proxy, no code generation, no reflection.
 
 `Koin is a DSL, a light container and a pragmatic API`
 
-## Official Website 👉 [https://insert-koin.io](https://insert-koin.io)
-
-### Latest News 🌐
+## Latest News 🌐
 
 - Follow us on Twitter for latest news: [@insertkoin_io](https://twitter.com/insertkoin_io)
 - Koin developers on Medium: [koin developers hub](https://medium.com/koin-developers)
 
-### Getting Help 🚒
+## Documentation 🚒
 
-Documentation:
-* [Getting Stared](https://start.insert-koin.io/)
+* [Getting Started](https://start.insert-koin.io/)
 * [Documentation References](https://doc.insert-koin.io/)
 
-Any question about Koin usage? 
+## Ask a Question? 🚑
+
 - Come talk on slack [#koin](https://kotlinlang.slack.com/?redir=%2Fmessages%2Fkoin) channel
 - Post your question on [Stackoverflow - #koin tag](https://stackoverflow.com/questions/tagged/koin)
 
-### Articles, Videos & other resources 🎉
+## Reporting issues 💥
 
-Online resources about Koin - [Talking about Koin](https://github.com/InsertKoinIO/koin/blob/master/README.md#talking-about-koin)
+Found a bug on a specific feature? Open an issue on [Github issues](https://github.com/InsertKoinIO/koin/issues)
 
-### Reporting issues 🚑
-
-Found a bug or a problem on a specific feature? Open an issue on [Github issues](https://github.com/InsertKoinIO/koin/issues)
-
-
-### Contributing 🛠
+## Contribute 🛠
 
 Want to help or share a proposal about Koin? problem on a specific feature? 
 
@@ -51,7 +44,7 @@ Additional readings about basic setup: https://github.com/InsertKoinIO/koin/blob
 
 ```gradle
 // latest stable
-koin_version = '2.1.1'
+koin_version = '2.1.6'
 ```
 
 ## Gradle 
@@ -95,8 +88,8 @@ implementation "org.koin:koin-core:$koin_version"
 implementation "org.koin:koin-core-ext:$koin_version"
 // Koin for Unit tests
 testImplementation "org.koin:koin-test:$koin_version"
-// Koin for Java developers
-implementation "org.koin:koin-java:$koin_version"
+// Koin for Java developers is now part of core
+// implementation "org.koin:koin-java:$koin_version"
 ```
 
 #### Android
@@ -217,7 +210,7 @@ class MyApplication : Application() {
 * [Simplify your Android development with Koin - Mobilization @ Lodz, Poland](https://www.youtube.com/watch?v=KzQbJFVjr9w&t=1s)
 * [Talking Kotlin - Dependency injection with Koin](http://talkingkotlin.com/dependency-injection-with-koin/)
 * [L'injection de poireaux avec Koin - AndroidLeaks ep42 (French)](https://androidleakspodcast.com/2018/08/05/episode-42-linjection-de-poireaux-avec-koin/)
-* [Insert Koin. Mobile Fest 2018, Kiev, Urkaine (Russian)](https://youtu.be/HrTz5jToQkk)
+* [Insert Koin. Mobile Fest 2018, Kiev, Ukraine (Russian)](https://youtu.be/HrTz5jToQkk)
 
 ### Koin Developers Hub
 

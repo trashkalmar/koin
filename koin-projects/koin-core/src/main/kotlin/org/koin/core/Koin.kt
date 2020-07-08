@@ -53,8 +53,8 @@ class Koin {
      */
     @JvmOverloads
     inline fun <reified T> inject(
-            qualifier: Qualifier? = null,
-            noinline parameters: ParametersDefinition? = null
+        qualifier: Qualifier? = null,
+        noinline parameters: ParametersDefinition? = null
     ): Lazy<T> = _scopeRegistry.rootScope.inject(qualifier, parameters)
 
     /**
@@ -67,8 +67,8 @@ class Koin {
      */
     @JvmOverloads
     inline fun <reified T> injectOrNull(
-            qualifier: Qualifier? = null,
-            noinline parameters: ParametersDefinition? = null
+        qualifier: Qualifier? = null,
+        noinline parameters: ParametersDefinition? = null
     ): Lazy<T?> = _scopeRegistry.rootScope.injectOrNull(qualifier, parameters)
 
     /**
@@ -79,8 +79,8 @@ class Koin {
      */
     @JvmOverloads
     inline fun <reified T> get(
-            qualifier: Qualifier? = null,
-            noinline parameters: ParametersDefinition? = null
+        qualifier: Qualifier? = null,
+        noinline parameters: ParametersDefinition? = null
     ): T = _scopeRegistry.rootScope.get(qualifier, parameters)
 
     /**
@@ -93,8 +93,8 @@ class Koin {
      */
     @JvmOverloads
     inline fun <reified T> getOrNull(
-            qualifier: Qualifier? = null,
-            noinline parameters: ParametersDefinition? = null
+        qualifier: Qualifier? = null,
+        noinline parameters: ParametersDefinition? = null
     ): T? = _scopeRegistry.rootScope.getOrNull(qualifier, parameters)
 
     /**
@@ -107,10 +107,25 @@ class Koin {
      * @return instance of type T
      */
     fun <T> get(
+        clazz: KClass<*>,
+        qualifier: Qualifier? = null,
+        parameters: ParametersDefinition? = null
+    ): T = _scopeRegistry.rootScope.get(clazz, qualifier, parameters)
+
+    /**
+     * Get a Koin instance if available
+     * @param clazz
+     * @param qualifier
+     * @param scope
+     * @param parameters
+     *
+     * @return instance of type T or null
+     */
+    fun <T> getOrNull(
             clazz: KClass<*>,
             qualifier: Qualifier? = null,
             parameters: ParametersDefinition? = null
-    ): T = _scopeRegistry.rootScope.get(clazz, qualifier, parameters)
+    ): T? = _scopeRegistry.rootScope.getOrNull(clazz, qualifier, parameters)
 
 
     /**
@@ -122,13 +137,14 @@ class Koin {
      * @param secondaryTypes List of secondary bound types
      * @param override Allows to override a previous declaration of the same type (default to false).
      */
-    fun <T : Any> declare(
-            instance: T,
-            qualifier: Qualifier? = null,
-            secondaryTypes: List<KClass<*>>? = null,
-            override: Boolean = false
+    inline fun <reified T : Any> declare(
+        instance: T,
+        qualifier: Qualifier? = null,
+        secondaryTypes: List<KClass<*>> = emptyList(),
+        override: Boolean = false
     ) {
-        _scopeRegistry.rootScope.declare(instance, qualifier, secondaryTypes, override)
+        val firstType = listOf(T::class)
+        _scopeRegistry.rootScope.declare(instance, qualifier, firstType + secondaryTypes, override)
     }
 
     /**
@@ -145,7 +161,7 @@ class Koin {
      * @return instance of type S
      */
     inline fun <reified S, reified P> bind(noinline parameters: ParametersDefinition? = null): S =
-            _scopeRegistry.rootScope.bind<S, P>(parameters)
+        _scopeRegistry.rootScope.bind<S, P>(parameters)
 
     /**
      * Get instance of primary type P and secondary type S
@@ -154,9 +170,9 @@ class Koin {
      * @return instance of type S
      */
     fun <S> bind(
-            primaryType: KClass<*>,
-            secondaryType: KClass<*>,
-            parameters: ParametersDefinition? = null
+        primaryType: KClass<*>,
+        secondaryType: KClass<*>,
+        parameters: ParametersDefinition? = null
     ): S = _scopeRegistry.rootScope.bind(primaryType, secondaryType, parameters)
 
     internal fun createEagerInstances() {
@@ -175,23 +191,23 @@ class Koin {
      * @param scopeId
      * @param scopeDefinitionName
      */
-    fun createScope(scopeId: ScopeID, qualifier: Qualifier): Scope {
+    fun createScope(scopeId: ScopeID, qualifier: Qualifier, source: Any? = null): Scope {
         if (_logger.isAt(Level.DEBUG)) {
             _logger.debug("!- create scope - id:'$scopeId' q:$qualifier")
         }
-        return _scopeRegistry.createScope(scopeId, qualifier)
+        return _scopeRegistry.createScope(scopeId, qualifier, source)
     }
 
     /**
      * Create a Scope instance
      * @param scopeId
      */
-    inline fun <reified T> createScope(scopeId: ScopeID): Scope {
+    inline fun <reified T> createScope(scopeId: ScopeID, source: Any? = null): Scope {
         val qualifier = TypeQualifier(T::class)
         if (_logger.isAt(Level.DEBUG)) {
             _logger.debug("!- create scope - id:'$scopeId' q:$qualifier")
         }
-        return _scopeRegistry.createScope(scopeId, qualifier)
+        return _scopeRegistry.createScope(scopeId, qualifier, source)
     }
 
     /**
@@ -205,7 +221,7 @@ class Koin {
         if (_logger.isAt(Level.DEBUG)) {
             _logger.debug("!- create scope - id:'$scopeId' q:$qualifier")
         }
-        return _scopeRegistry.createScope(scopeId, qualifier)
+        return _scopeRegistry.createScope(scopeId, qualifier, null)
     }
 
     /**
@@ -233,7 +249,7 @@ class Koin {
      */
     fun getScope(scopeId: ScopeID): Scope {
         return _scopeRegistry.getScopeOrNull(scopeId)
-                ?: throw ScopeNotCreatedException("No scope found for id '$scopeId'")
+            ?: throw ScopeNotCreatedException("No scope found for id '$scopeId'")
     }
 
     /**
@@ -256,15 +272,15 @@ class Koin {
      * @param key
      * @param defaultValue
      */
-    fun <T> getProperty(key: String, defaultValue: T): T {
-        return _propertyRegistry.getProperty<T>(key) ?: defaultValue
+    fun getProperty(key: String, defaultValue: String): String {
+        return _propertyRegistry.getProperty(key) ?: defaultValue
     }
 
     /**
      * Retrieve a property
      * @param key
      */
-    fun <T> getProperty(key: String): T? {
+    fun getProperty(key: String): String? {
         return _propertyRegistry.getProperty(key)
     }
 
@@ -273,7 +289,7 @@ class Koin {
      * @param key
      * @param value
      */
-    fun <T : Any> setProperty(key: String, value: T) {
+    fun setProperty(key: String, value: String) {
         _propertyRegistry.saveProperty(key, value)
     }
 
